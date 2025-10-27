@@ -1,7 +1,8 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -12,6 +13,7 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
+migrate = Migrate(app, db)
 
 # ----------------------------
 # Database Model
@@ -49,15 +51,15 @@ def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email']
         role = request.form['role']
-        department = request.form.get('department')
-        email = request.form['email']  # 👈 get email input
 
-        new_user = User(username=username, password=password, role=role, department=department, email=email)
+        new_user = User(username=username, password=password, email=email, role=role)
         db.session.add(new_user)
         db.session.commit()
         return redirect('/login')
     return render_template('signup.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
