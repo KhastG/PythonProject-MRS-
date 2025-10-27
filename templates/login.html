@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+<body>
+    <header>
+        <h1>SIMPLE MAINTENANCE REQUEST PROJECT</h1>
+    </header>
+
+    <div class="form-box">
+        <h2>Login Page</h2>
+
+        <form method="POST">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
+
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <p>Don’t have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
+    </footer>
+</body>
+</html>

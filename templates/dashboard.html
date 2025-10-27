@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <header>
+        <h1> SIMPLE MAINTENANCE REQUEST PROJECT</h1>
+    </header>
+    <h2>Welcome, {{ user.username }}!</h2>
+    <p>Your role: {{ user.role }}</p>
+    {% if user.role == 'maintenance' %}
+        <p>Department: {{ user.department }}</p>
+    {% endif %}
+
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <footer>
+        <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
+    </footer>
+</body>
+</html>
