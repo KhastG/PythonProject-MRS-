@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 import random
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -47,6 +48,7 @@ class Request(db.Model):
     category = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(50), default='Pending')
     submitted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    date_submitted = db.Column(db.DateTime, default=datetime.utcnow)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -197,6 +199,30 @@ def submit_ticket():
     # Categories to choose from
     categories = ["Plumbing", "Electrical", "IT Support", "Carpentry"]
     return render_template('submit_ticket.html', categories=categories)
+
+@app.route('/delete_ticket/<int:ticket_id>', methods=['POST'])
+@login_required
+def delete_ticket(ticket_id):
+    ticket = Request.query.get(ticket_id)
+
+    if not ticket:
+        flash("Ticket not found.", "danger")
+        return redirect(url_for('dashboard'))
+
+    # Check if this ticket belongs to the current user
+    if ticket.submitted_by != current_user.id:
+        flash("You can only delete your own tickets.", "danger")
+        return redirect(url_for('dashboard'))
+
+    # Allow delete only if still pending
+    if ticket.status == 'Pending':
+        db.session.delete(ticket)
+        db.session.commit()
+        flash("Ticket successfully deleted.", "success")
+    else:
+        flash("You cannot delete a ticket that has already been approved or is in progress.", "warning")
+
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/logout')

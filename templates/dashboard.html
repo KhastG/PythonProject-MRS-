@@ -23,28 +23,21 @@
             <p>Status: {{ ticket.status }}</p>
             <p>Department: {{ ticket.category }}</p>
             <p>Submitted By: {{ ticket.submitted_by }}</p>
+
+            {% if ticket.date_submitted %}
+            <p>Submitted On: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
+            {% endif %}
+
+            {% if user.role == 'employee' and ticket.status == 'Pending' %}
+            <form method="POST" action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}">
+                <button type="submit" class="delete-btn">Cancel Request</button>
+            </form>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
     {% else %}
     <p>No tickets to show.</p>
-    {% endif %}
-
-
-    {% if requests %}
-    <h3>Your Requests:</h3>
-    <div class="requests">
-        {% for req in requests %}
-        <div class="request-card">
-            <h4>{{ req.title }}</h4>
-            <p>Status: {{ req.status }}</p>
-            <p>Category: {{ req.category }}</p>
-            <p>Submitted By: {{ req.submitted_by }}</p>
-        </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p>No requests to show.</p>
     {% endif %}
 </div>
 
@@ -71,6 +64,7 @@
     </form>
 </div>
 {% endif %}
+
 <footer>
     <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
 </footer>

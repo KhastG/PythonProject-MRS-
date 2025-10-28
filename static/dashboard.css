@@ -137,5 +137,20 @@ a:hover {
     background-color: #F28B82;
 }
 
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.delete-btn:hover {
+    background-color: #e53935;
+}
+
+
 
 
