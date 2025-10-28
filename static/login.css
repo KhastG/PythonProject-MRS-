@@ -43,13 +43,3 @@ button {
 button:hover {
     background-color: #E57373;
 }
-
-footer {
-    color: white;
-    background-color: #E57373;
-    padding: 10px;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    text-align: center;
-}

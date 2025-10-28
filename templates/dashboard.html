@@ -1,37 +1,77 @@
 <body>
-    <header>
-        <h1>SIMPLE MAINTENANCE REQUEST PROJECT</h1>
-        <a class="logout-link" href="{{ url_for('logout') }}">LOG OUT</a>
-        <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
-    </header>
+<header>
+    <h1>SIMPLE MAINTENANCE REQUEST PROJECT</h1>
+    <a class="logout-link" href="{{ url_for('logout') }}">LOG OUT</a>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</header>
 
-
-    <div class="container">
-        <div class="user-info">
-            <h2>Welcome, {{ user.username }}!</h2>
-            <p>Your role: {{ user.role }}</p>
-            {% if user.role == 'maintenance' %}
-                <p>Department: {{ user.department }}</p>
-            {% endif %}
-        </div>
-
-        {% if requests %}
-        <h3>Your Requests:</h3>
-        <div class="requests">
-            {% for req in requests %}
-            <div class="request-card">
-                <h4>{{ req.title }}</h4>
-                <p>Status: {{ req.status }}</p>
-                <p>Category: {{ req.category }}</p>
-                <p>Submitted By: {{ req.submitted_by }}</p>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-            <p>No requests to show.</p>
+<div class="container">
+    <div class="user-info">
+        <h2>Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
+        <p>Your role: {{ user.role }}</p>
+        {% if user.role == 'maintenance' %}
+        <p>Department: {{ user.department }}</p>
         {% endif %}
     </div>
-    <footer>
-        <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
-    </footer>
+
+    <h3>Your Tickets:</h3>
+    {% if tickets %}
+    <div class="requests">
+        {% for ticket in tickets %}
+        <div class="request-card">
+            <h4>{{ ticket.title }}</h4>
+            <p>Status: {{ ticket.status }}</p>
+            <p>Department: {{ ticket.category }}</p>
+            <p>Submitted By: {{ ticket.submitted_by }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No tickets to show.</p>
+    {% endif %}
+
+
+    {% if requests %}
+    <h3>Your Requests:</h3>
+    <div class="requests">
+        {% for req in requests %}
+        <div class="request-card">
+            <h4>{{ req.title }}</h4>
+            <p>Status: {{ req.status }}</p>
+            <p>Category: {{ req.category }}</p>
+            <p>Submitted By: {{ req.submitted_by }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No requests to show.</p>
+    {% endif %}
+</div>
+
+{% if user.role == 'employee' %}
+<div class="ticket-form">
+    <h3>Submit a Maintenance Request</h3>
+    <form method="POST" action="{{ url_for('submit_ticket') }}">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="description">Description:</label><br>
+        <textarea id="description" name="description" rows="4" required></textarea><br><br>
+
+        <label for="category">Department Needed:</label><br>
+        <select id="category" name="category" required>
+            <option value="">-- Select Department --</option>
+            <option value="plumbing">Plumbing</option>
+            <option value="electrical">Electrical</option>
+            <option value="it">IT Support</option>
+            <option value="carpentry">Carpentry</option>
+        </select><br><br>
+
+        <button type="submit">Submit Ticket</button>
+    </form>
+</div>
+{% endif %}
+<footer>
+    <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
+</footer>
 </body>

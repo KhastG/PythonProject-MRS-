@@ -1,3 +1,6 @@
+body::-webkit-scrollbar {
+    display: none;
+}
 html, body {
     height: 100%;
     margin: 0;
@@ -66,16 +69,6 @@ h2, h3 {
     margin: 3px 0;
 }
 
-footer {
-    color: white;
-    background-color: #E57373;
-    padding: 10px;
-    text-align: center;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-}
-
 a {
     color: #fff;
     text-decoration: none;
@@ -102,4 +95,47 @@ a:hover {
 .logout-link:hover {
     background-color: #E57373;
 }
+
+.ticket-form {
+    background-color: #fff;
+    padding: 20px;
+    margin: 20px auto; /* center it horizontally */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    max-width: 900px;
+    width: 90%;
+}
+
+.ticket-form h3 {
+    color: #E57373;
+    margin-top: 0;
+}
+
+.ticket-form input,
+.ticket-form textarea,
+.ticket-form select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-top: 5px;
+}
+
+.ticket-form button {
+    margin-top: 10px;
+    background-color: #E57373;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+}
+
+.ticket-form button:hover {
+    background-color: #F28B82;
+}
+
+
 

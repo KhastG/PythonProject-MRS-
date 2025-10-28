@@ -29,36 +29,41 @@
         <h2>Create an Account</h2>
 
         <form method="POST" action="/signup">
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required><br><br>
+    <label for="first_name">First Name:</label><br>
+    <input type="text" id="first_name" name="first_name" required><br><br>
 
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required><br><br>
+    <label for="last_name">Last Name:</label><br>
+    <input type="text" id="last_name" name="last_name" required><br><br>
 
-            <label for="email">Email:</label><br>
-            <input type="email" id="email" name="email" required><br><br>
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username" required><br><br>
 
-            <label for="role">Role:</label><br>
-            <select id="role" name="role" onchange="toggleMaintenanceDropdown()" required>
-                <option value="">-- Select Role --</option>
-                <option value="employee">Employee</option>
-                <option value="maintenance">Maintenance</option>
-            </select><br><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
 
-            <!-- Hidden by default -->
-            <div id="maintenanceTypeDiv" style="display:none;">
-                <label for="maintenanceType">Maintenance Type:</label><br>
-                <select id="maintenanceType" name="maintenanceType" disabled required>
-                    <option value="">-- Select Maintenance Type --</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="it">IT Support</option>
-                    <option value="carpentry">Carpentry</option>
-                </select><br><br>
-            </div>
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
 
-            <button type="submit">Sign Up</button>
-        </form>
+    <label for="role">Role:</label><br>
+    <select id="role" name="role" onchange="toggleMaintenanceDropdown()" required>
+        <option value="">-- Select Role --</option>
+        <option value="employee">Employee</option>
+        <option value="maintenance">Maintenance</option>
+    </select><br><br>
+
+    <div id="maintenanceTypeDiv" style="display:none;">
+        <label for="maintenanceType">Maintenance Type:</label><br>
+        <select id="maintenanceType" name="maintenanceType" disabled required>
+            <option value="">-- Select Maintenance Type --</option>
+            <option value="plumbing">Plumbing</option>
+            <option value="electrical">Electrical</option>
+            <option value="it">IT Support</option>
+            <option value="carpentry">Carpentry</option>
+        </select><br><br>
+    </div>
+
+    <button type="submit">Sign Up</button>
+</form>
 
         <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
     </div>
