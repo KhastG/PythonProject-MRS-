@@ -1,22 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
-</head>
 <body>
     <header>
-        <h1> SIMPLE MAINTENANCE REQUEST PROJECT</h1>
+        <h1>SIMPLE MAINTENANCE REQUEST PROJECT</h1>
+        <a class="logout-link" href="{{ url_for('logout') }}">LOG OUT</a>
+        <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
     </header>
-    <h2>Welcome, {{ user.username }}!</h2>
-    <p>Your role: {{ user.role }}</p>
-    {% if user.role == 'maintenance' %}
-        <p>Department: {{ user.department }}</p>
-    {% endif %}
 
-    <a href="{{ url_for('logout') }}">Logout</a>
+
+    <div class="container">
+        <div class="user-info">
+            <h2>Welcome, {{ user.username }}!</h2>
+            <p>Your role: {{ user.role }}</p>
+            {% if user.role == 'maintenance' %}
+                <p>Department: {{ user.department }}</p>
+            {% endif %}
+        </div>
+
+        {% if requests %}
+        <h3>Your Requests:</h3>
+        <div class="requests">
+            {% for req in requests %}
+            <div class="request-card">
+                <h4>{{ req.title }}</h4>
+                <p>Status: {{ req.status }}</p>
+                <p>Category: {{ req.category }}</p>
+                <p>Submitted By: {{ req.submitted_by }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+            <p>No requests to show.</p>
+        {% endif %}
+    </div>
     <footer>
         <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
     </footer>
 </body>
-</html>

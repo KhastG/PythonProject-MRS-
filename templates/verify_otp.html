@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify OTP</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+</head>
+<body>
+    <div class="form-box">
+        <h2>Email Verification</h2>
+        <p>Please enter the 6-digit OTP sent to your email.</p>
+
+        <form method="POST" action="/verify_otp">
+            <label for="otp">OTP Code:</label><br>
+            <input type="text" id="otp" name="otp" maxlength="6" required><br><br>
+            <button type="submit">Verify</button>
+        </form>
+    </div>
+</body>
+</html>
