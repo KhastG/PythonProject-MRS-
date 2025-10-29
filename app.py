@@ -43,7 +43,7 @@ class Ticket(db.Model):
     status = db.Column(db.String(50), default='Pending')
     submitted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     submitted_name = db.Column(db.String(150), nullable=False)
-    date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Manila")))
     approved_by = db.Column(db.String(150))
     date_approved = db.Column(db.DateTime)
 
@@ -99,6 +99,13 @@ def verify_otp():
         stored_otp = session.get('otp')
 
         if str(entered_otp) == str(stored_otp):
+            # Restrict admin signup to only one account
+            if session['temp_role'] == 'admin':
+                existing_admin = User.query.filter_by(role='admin').first()
+                if existing_admin:
+                    flash("An admin account already exists. Cannot create another.", "danger")
+                    return redirect(url_for('signup'))
+
             new_user = User(
                 first_name=session['temp_first_name'],
                 last_name=session['temp_last_name'],
@@ -167,9 +174,46 @@ def dashboard():
 
     for ticket in tickets:
         if ticket.date_submitted:
-            ticket.local_date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
+            ticket.date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
 
     return render_template('dashboard.html', user=current_user, tickets=tickets)
+
+@app.route('/maintenance_dashboard')
+@login_required
+def maintenance_dashboard():
+    if current_user.role != 'maintenance':
+        flash("You are not authorized to access this page.", "danger")
+        return redirect(url_for('dashboard'))
+
+    # Show only tickets assigned to their department
+    tickets = Ticket.query.filter_by(category=current_user.department).all()
+
+    for ticket in tickets:
+        if ticket.date_submitted:
+            ticket.date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
+
+    return render_template('maintenance_dashboard.html', user=current_user, tickets=tickets)
+
+@app.route('/admin_dashboard')
+@login_required
+def admin_dashboard():
+    if current_user.role != 'admin':
+        flash("You are not authorized to access this page.", "danger")
+        return redirect(url_for('dashboard'))
+
+    # Fetch all users
+    users = User.query.all()
+
+    # Fetch all tickets
+    tickets = Ticket.query.all()
+
+    # Optional filter by department
+    department_filter = request.args.get('department')
+    if department_filter:
+        tickets = Ticket.query.filter_by(category=department_filter).all()
+
+    return render_template('admin_dashboard.html', users=users, tickets=tickets)
+
 
 @app.route('/submit_ticket', methods=['POST'])
 @login_required
@@ -196,6 +240,29 @@ def submit_ticket():
     flash("Ticket submitted successfully!", "success")
     return redirect(url_for('dashboard'))
 
+@app.route('/edit_ticket/<int:ticket_id>', methods=['POST'])
+@login_required
+def edit_ticket(ticket_id):
+    ticket = Ticket.query.get(ticket_id)
+
+    if not ticket:
+        flash("Ticket not found.", "danger")
+        return redirect(url_for('dashboard'))
+
+    # Only the ticket owner can edit, and only if still pending
+    if ticket.submitted_by != current_user.id or ticket.status != 'Pending':
+        flash("You cannot edit this ticket.", "danger")
+        return redirect(url_for('dashboard'))
+
+    ticket.title = request.form['title']
+    ticket.description = request.form['description']
+    ticket.category = request.form['category']
+
+    db.session.commit()
+    flash("Ticket updated successfully!", "success")
+    return redirect(url_for('dashboard'))
+
+
 
 @app.route('/delete_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
@@ -211,16 +278,18 @@ def delete_ticket(ticket_id):
         flash("You can only delete your own tickets.", "danger")
         return redirect(url_for('dashboard'))
 
-    if Ticket.query.count() == 0:
-        # Reset AUTO_INCREMENT to 1 (MySQL)
-        db.session.execute(text("ALTER TABLE ticket AUTO_INCREMENT = 1"))
-        db.session.commit()
-
     #FEATURE: ALLOWING THE USER TO DELETE WHILE THE TICKET IS PENDING
     if ticket.status == 'Pending':
         db.session.delete(ticket)
         db.session.commit()
+
+        # FIX THE DB IF THE EMPLOYEE DELETES THE TICKET
+        if Ticket.query.count() == 0:
+            db.session.execute(text("ALTER TABLE ticket AUTO_INCREMENT = 1"))
+            db.session.commit()
+
         flash("Ticket successfully deleted.", "success")
+
     else:
         flash("You cannot delete a ticket that has already been approved or is in progress.", "warning")
 

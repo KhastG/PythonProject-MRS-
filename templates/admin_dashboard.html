@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+
+    <h2>All Users</h2>
+    <table>
+        <tr>
+            <th>First Name</th><th>Last Name</th><th>Role</th><th>Username</th><th>Email</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.first_name }}</td>
+            <td>{{ user.last_name }}</td>
+            <td>{{ user.role }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>All Tickets</h2>
+    <form method="get">
+        <label for="department">Filter by Department:</label>
+        <select name="department" onchange="this.form.submit()">
+            <option value="">All</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="Cleaning">Cleaning</option>
+        </select>
+    </form>
+
+    <table>
+        <tr>
+            <th>ID</th><th>Employee</th><th>Department</th><th>Description</th><th>Status</th>
+        </tr>
+        {% for ticket in tickets %}
+        <tr>
+            <td>{{ ticket.id }}</td>
+            <td>{{ ticket.submitted_name }}</td>
+            <td>{{ ticket.category }}</td>
+            <td>{{ ticket.description }}</td>
+            <td>{{ ticket.status }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
