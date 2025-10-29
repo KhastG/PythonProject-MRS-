@@ -1,29 +1,23 @@
+import random
+
 from flask import Flask, render_template, redirect, url_for, request, flash, session
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-import random
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+from config import Config
+from sqlalchemy import text
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:gCEk4bteN)QgwfbA@localhost/db_maintenance'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Gmail configuration
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'teopecezar6@gmail.com'
-app.config['MAIL_PASSWORD'] = 'kpjjoctssqxvvziy'
-app.config['MAIL_DEFAULT_SENDER'] = ('OTP System', 'teopecezar6@gmail.com')
-mail = Mail(app)
+app.config.from_object(Config)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+mail = Mail(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 migrate = Migrate(app, db)
@@ -41,14 +35,20 @@ class User(UserMixin, db.Model):
     department = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True, nullable=False)
 
-class Request(db.Model):
+class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(50), default='Pending')
     submitted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    date_submitted = db.Column(db.DateTime, default=datetime.utcnow)
+    submitted_name = db.Column(db.String(150), nullable=False)
+    date_submitted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    approved_by = db.Column(db.String(150))
+    date_approved = db.Column(db.DateTime)
+
+    # Optional relationship for easy reference to user
+    user = db.relationship('User', backref=db.backref('tickets', cascade='all, delete-orphan'), lazy=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -159,62 +159,64 @@ def login():
 @login_required
 def dashboard():
     if current_user.role == 'employee':
-        # Employee sees only their own tickets
-        tickets = Request.query.filter_by(submitted_by=current_user.id).all()
+        tickets = Ticket.query.filter_by(submitted_by=current_user.id).all()
     elif current_user.role == 'maintenance':
-        # Maintenance sees only tickets for their department
-        tickets = Request.query.filter_by(category=current_user.department).all()
+        tickets = Ticket.query.filter_by(category=current_user.department).all()
     else:
-        # Admin sees all tickets
-        tickets = Request.query.all()
+        tickets = Ticket.query.all()
+
+    for ticket in tickets:
+        if ticket.date_submitted:
+            ticket.local_date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
 
     return render_template('dashboard.html', user=current_user, tickets=tickets)
 
-
-@app.route('/submit_ticket', methods=['GET', 'POST'])
+@app.route('/submit_ticket', methods=['POST'])
 @login_required
 def submit_ticket():
     if current_user.role != 'employee':
         flash("Only employees can submit tickets.", "danger")
         return redirect(url_for('dashboard'))
 
-    if request.method == 'POST':
-        title = request.form['title']
-        description = request.form['description']
-        category = request.form['category']
+    title = request.form['title']
+    description = request.form['description']
+    category = request.form['category']
+    submitted_name = f"{current_user.first_name} {current_user.last_name}"
 
-        new_request = Request(
-            title=title,
-            description=description,
-            category=category,
-            submitted_by=current_user.id
-        )
+    new_ticket = Ticket(
+        title=title,
+        description=description,
+        category=category,
+        submitted_by=current_user.id,
+        submitted_name=submitted_name
+    )
 
-        db.session.add(new_request)
-        db.session.commit()
+    db.session.add(new_ticket)
+    db.session.commit()
+    flash("Ticket submitted successfully!", "success")
+    return redirect(url_for('dashboard'))
 
-        flash("Ticket submitted successfully!", "success")
-        return redirect(url_for('dashboard'))
-
-    # Categories to choose from
-    categories = ["Plumbing", "Electrical", "IT Support", "Carpentry"]
-    return render_template('submit_ticket.html', categories=categories)
 
 @app.route('/delete_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
 def delete_ticket(ticket_id):
-    ticket = Request.query.get(ticket_id)
+    ticket = Ticket.query.get(ticket_id)
 
     if not ticket:
         flash("Ticket not found.", "danger")
         return redirect(url_for('dashboard'))
 
-    # Check if this ticket belongs to the current user
+    # checker if  this was belonged to the user
     if ticket.submitted_by != current_user.id:
         flash("You can only delete your own tickets.", "danger")
         return redirect(url_for('dashboard'))
 
-    # Allow delete only if still pending
+    if Ticket.query.count() == 0:
+        # Reset AUTO_INCREMENT to 1 (MySQL)
+        db.session.execute(text("ALTER TABLE ticket AUTO_INCREMENT = 1"))
+        db.session.commit()
+
+    #FEATURE: ALLOWING THE USER TO DELETE WHILE THE TICKET IS PENDING
     if ticket.status == 'Pending':
         db.session.delete(ticket)
         db.session.commit()

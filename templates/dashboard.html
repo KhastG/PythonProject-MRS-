@@ -1,8 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+
 <body>
 <header>
     <h1>SIMPLE MAINTENANCE REQUEST PROJECT</h1>
     <a class="logout-link" href="{{ url_for('logout') }}">LOG OUT</a>
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
 </header>
 
 <div class="container">
@@ -21,12 +27,9 @@
         <div class="request-card">
             <h4>{{ ticket.title }}</h4>
             <p>Status: {{ ticket.status }}</p>
-            <p>Department: {{ ticket.category }}</p>
-            <p>Submitted By: {{ ticket.submitted_by }}</p>
-
-            {% if ticket.date_submitted %}
-            <p>Submitted On: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
-            {% endif %}
+            <p>Department: {{ ticket.category|upper }}</p>
+            <p>Submitted By: {{ ticket.submitted_name }}</p>
+            <p>Date Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
 
             {% if user.role == 'employee' and ticket.status == 'Pending' %}
             <form method="POST" action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}">
@@ -68,4 +71,8 @@
 <footer>
     <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
 </footer>
+
+<!-- JAVASCRIPT(kase wala lng) -->
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
 </body>
+</html>
