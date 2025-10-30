@@ -50,6 +50,19 @@ class Ticket(db.Model):
     # Optional relationship for easy reference to user
     user = db.relationship('User', backref=db.backref('tickets', cascade='all, delete-orphan'), lazy=True)
 
+class DoneTicket(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, nullable=False)  # reference to original ticket
+    title = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    employee_first_name = db.Column(db.String(100))
+    employee_last_name = db.Column(db.String(100))
+    maintenance_first_name = db.Column(db.String(100))
+    maintenance_last_name = db.Column(db.String(100))
+    date_approved = db.Column(db.DateTime, nullable=False)
+    date_done = db.Column(db.DateTime, nullable=False)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -155,9 +168,13 @@ def login():
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
             flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid credentials!', 'danger')
+            # redirect to proper dashboard based on role
+            if user.role == 'employee':
+                return redirect(url_for('dashboard'))
+            elif user.role == 'maintenance':
+                return redirect(url_for('maintenance_dashboard'))
+            elif user.role == 'admin':
+                return redirect(url_for('admin_dashboard'))
 
     return render_template('login.html')
 
@@ -165,17 +182,10 @@ def login():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    if current_user.role == 'employee':
-        tickets = Ticket.query.filter_by(submitted_by=current_user.id).all()
-    elif current_user.role == 'maintenance':
-        tickets = Ticket.query.filter_by(category=current_user.department).all()
-    else:
-        tickets = Ticket.query.all()
-
-    for ticket in tickets:
-        if ticket.date_submitted:
-            ticket.date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
-
+    if current_user.role != 'employee':
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('login'))
+    tickets = Ticket.query.filter_by(submitted_by=current_user.id).all()
     return render_template('dashboard.html', user=current_user, tickets=tickets)
 
 @app.route('/maintenance_dashboard')
@@ -212,8 +222,8 @@ def admin_dashboard():
     if department_filter:
         tickets = Ticket.query.filter_by(category=department_filter).all()
 
-    return render_template('admin_dashboard.html', users=users, tickets=tickets)
-
+    done_tickets = DoneTicket.query.all()
+    return render_template('admin_dashboard.html', users=users, tickets=tickets, done_tickets=done_tickets)
 
 @app.route('/submit_ticket', methods=['POST'])
 @login_required
@@ -240,6 +250,26 @@ def submit_ticket():
     flash("Ticket submitted successfully!", "success")
     return redirect(url_for('dashboard'))
 
+@app.route('/approve_ticket/<int:ticket_id>', methods=['POST'])
+@login_required
+def approve_ticket(ticket_id):
+    if current_user.role != 'maintenance':
+        flash("You are not authorized to approve tickets.", "danger")
+        return redirect(url_for('dashboard'))
+
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket:
+        flash("Ticket not found.", "danger")
+        return redirect(url_for('maintenance_dashboard'))
+
+    ticket.status = 'Approved'
+    ticket.approved_by = f"{current_user.first_name} {current_user.last_name}"
+    ticket.date_approved = datetime.now(ZoneInfo("Asia/Manila"))
+
+    db.session.commit()
+    flash("Ticket approved successfully!", "success")
+    return redirect(url_for('maintenance_dashboard'))
+
 @app.route('/edit_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
 def edit_ticket(ticket_id):
@@ -262,6 +292,53 @@ def edit_ticket(ticket_id):
     flash("Ticket updated successfully!", "success")
     return redirect(url_for('dashboard'))
 
+@app.route('/done_ticket/<int:ticket_id>', methods=['POST'])
+@login_required
+def done_ticket(ticket_id):
+    if current_user.role != 'maintenance':
+        flash("You are not authorized to mark tickets as done.", "danger")
+        return redirect(url_for('dashboard'))
+
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket or ticket.status != 'Approved':
+        flash("Ticket not valid to mark as done.", "danger")
+        return redirect(url_for('maintenance_dashboard'))
+
+    done = DoneTicket(
+        ticket_id=ticket.id,
+        title=ticket.title,
+        description=ticket.description,
+        department=ticket.category,
+        employee_first_name=ticket.user.first_name,
+        employee_last_name=ticket.user.last_name,
+        maintenance_first_name=current_user.first_name,
+        maintenance_last_name=current_user.last_name,
+        date_approved=ticket.date_approved,
+        date_done=datetime.now(ZoneInfo("Asia/Manila"))
+    )
+
+    db.session.add(done)
+    db.session.delete(ticket)
+    db.session.commit()
+    flash("Ticket marked as done and moved to done tickets.", "success")
+    return redirect(url_for('maintenance_dashboard'))
+
+@app.route('/cancel_ticket/<int:ticket_id>', methods=['POST'])
+@login_required
+def cancel_ticket(ticket_id):
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket:
+        flash("Ticket not found.", "danger")
+        return redirect(url_for('maintenance_dashboard'))
+
+    if current_user.role == 'maintenance' or (current_user.role == 'employee' and ticket.submitted_by == current_user.id):
+        db.session.delete(ticket)
+        db.session.commit()
+        flash("Ticket cancelled successfully.", "success")
+    else:
+        flash("You cannot cancel this ticket.", "danger")
+
+    return redirect(url_for('maintenance_dashboard'))
 
 
 @app.route('/delete_ticket/<int:ticket_id>', methods=['POST'])
