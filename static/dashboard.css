@@ -15,9 +15,15 @@ header {
     color: white;
     display: flex;
     align-items: center;
-    position: relative;  /* positioning in log-out button*/
-    justify-content: center; /* center the h1 */
+    position: relative;  /* THE POSITION FOR THE LOG-OUT BUTTON*/
+    justify-content: center; /* CENTERS THE CONTENT AT THE HEADER (TEXT)*/
 }
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
 
 .title p {
     display: block;
@@ -65,12 +71,14 @@ h2, h3 {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.request-card h4 {
-    margin: 0 0 5px 0;
+.card {
+  min-height: 230px;
+  word-wrap: break-word;
 }
 
-.request-card p {
-    margin: 3px 0;
+.btn.btn-warning.btn-sm {
+  line-height: 1.4; /* Adjust this value until it looks perfect */
+  padding-top: 5px;
 }
 
 a {
@@ -152,6 +160,16 @@ a:hover {
 
 .delete-btn:hover {
     background-color: #e53935;
+}
+
+footer {
+    margin-top: auto;
+    text-align: center;
+    padding: 15px 0;
+    background-color: transparent;
+    position: relative;
+    bottom: 0;
+    width: 100%;
 }
 
 

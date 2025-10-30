@@ -8,7 +8,21 @@
 </head>
 <body>
     <h1>Admin Dashboard</h1>
+    <div class="container mt-4 mb-5">
 
+    <!-- SEARCH -->
+    <form method="GET" action="{{ url_for('search_users') }}" class="d-flex mb-4" role="search">
+        <input class="form-control me-2" type="search" name="q" placeholder="Search users..." aria-label="Search" required>
+        <button class="btn btn-outline-primary" type="submit">Search</button>
+    </form>
+
+    <!-- USER -->
+    <div class="user-info mb-4">
+        <h2>Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
+        <p>Your role: <strong>{{ user.role|upper }}</strong></p>
+        <p>Department: <strong>{{ user.department|upper }}</strong></p>
+    </div>
+    </div>
     <h2>All Users</h2>
     <table>
         <tr>
@@ -50,7 +64,8 @@
         </tr>
         {% endfor %}
     </table>
-<br><br><br>
-<p class="mb-0 text-center">&copy; 2025 | Designed by Poging Noy TEOPE</p>
+<footer>
+    <p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
+</footer>
 </body>
 </html>

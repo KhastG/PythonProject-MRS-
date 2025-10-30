@@ -1,4 +1,4 @@
-from app import app, mail
+from main import app, mail
 from flask_mail import Message
 
 with app.app_context():

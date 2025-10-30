@@ -1,13 +1,12 @@
 import random
 
-from flask import Flask, render_template, redirect, url_for, request, flash, session
+from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
-from datetime import datetime, timezone
+from datetime import datetime
 from zoneinfo import ZoneInfo
 from config import Config
 from sqlalchemy import text
@@ -22,9 +21,20 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 migrate = Migrate(app, db)
 
-# ----------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Database Models
-# ----------------------------
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
@@ -47,7 +57,7 @@ class Ticket(db.Model):
     approved_by = db.Column(db.String(150))
     date_approved = db.Column(db.DateTime)
 
-    # Optional relationship for easy reference to user
+    # EASY REFERENCE PARA SA USERS
     user = db.relationship('User', backref=db.backref('tickets', cascade='all, delete-orphan'), lazy=True)
 
 class DoneTicket(db.Model):
@@ -146,7 +156,7 @@ def verify_otp():
 
                 return redirect(url_for('login'))
 
-            except IntegrityError:
+            except:
                 db.session.rollback()  # Undo the failed commit
                 flash('Username or email already exists. Please try again with a different one.', 'danger')
                 return redirect(url_for('signup'))
@@ -211,13 +221,13 @@ def admin_dashboard():
         flash("You are not authorized to access this page.", "danger")
         return redirect(url_for('dashboard'))
 
-    # Fetch all users
+    # FETCH ALL THE USERS
     users = User.query.all()
 
-    # Fetch all tickets
+    # FETCH ALL THE TICKETS
     tickets = Ticket.query.all()
 
-    # Optional filter by department
+    # FILTER BY DEPARTMENT
     department_filter = request.args.get('department')
     if department_filter:
         tickets = Ticket.query.filter_by(category=department_filter).all()
@@ -296,24 +306,13 @@ def done_ticket(ticket_id):
         flash("Ticket not valid to mark as done.", "danger")
         return redirect(url_for('maintenance_dashboard'))
 
-    done = DoneTicket(
-        ticket_id=ticket.id,
-        title=ticket.title,
-        description=ticket.description,
-        department=ticket.category,
-        employee_first_name=ticket.user.first_name,
-        employee_last_name=ticket.user.last_name,
-        maintenance_first_name=current_user.first_name,
-        maintenance_last_name=current_user.last_name,
-        date_approved=ticket.date_approved,
-        date_done=datetime.now(ZoneInfo("Asia/Manila"))
-    )
-
-    db.session.add(done)
-    db.session.delete(ticket)
+    ticket.status = 'Done'
+    ticket.approved_by = f"{ticket.approved_by or ''} • {current_user.first_name} {current_user.last_name}"
+    ticket.date_approved = ticket.date_approved or datetime.now(ZoneInfo("Asia/Manila"))
     db.session.commit()
-    flash("Ticket marked as done and moved to done tickets.", "success")
+    flash("Ticket marked as done.", "success")
     return redirect(url_for('maintenance_dashboard'))
+
 
 @app.route('/cancel_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
@@ -342,7 +341,7 @@ def delete_ticket(ticket_id):
         flash("Ticket not found.", "danger")
         return redirect(url_for('dashboard'))
 
-    # checker if  this was belonged to the user
+    # CHECKER IF THIS WAS BELONGED TO A USER
     if ticket.submitted_by != current_user.id:
         flash("You can only delete your own tickets.", "danger")
         return redirect(url_for('dashboard'))
@@ -364,6 +363,88 @@ def delete_ticket(ticket_id):
 
     return redirect(url_for('dashboard'))
 
+@app.route('/search_users', methods=['GET'])
+def search_users():
+    query = request.args.get('q', '').strip()
+
+    if query:
+        results = User.query.filter(
+            (User.first_name.ilike(f'%{query}%')) |
+            (User.last_name.ilike(f'%{query}%')) |
+            (User.email.ilike(f'%{query}%')) |
+            (User.role.ilike(f'%{query}%'))
+        ).all()
+    else:
+        results = []
+
+    return render_template('search_results.html', users=results, query=query)
+
+@app.route('/filter_tickets')
+@login_required
+def filter_tickets():
+    status = request.args.get('status', 'All')
+    department = request.args.get('department', 'All')
+
+    #COMPARISONS
+    status = status or 'All'
+    department = department or 'All'
+
+    def ticket_to_dict(t):
+        return {
+            'id': t.id,
+            'title': t.title,
+            'description': t.description,
+            'status': getattr(t, 'status', 'Done'),  # Tickets have status, DoneTicket will be handled separately
+            'category': getattr(t, 'category', getattr(t, 'department', '')),
+            'submitted_name': getattr(t, 'submitted_name', f"{getattr(t, 'employee_first_name', '')} {getattr(t, 'employee_last_name', '')}").strip(),
+            'date_submitted': getattr(t, 'date_submitted', getattr(t, 'date_done', None)).strftime("%B %d, %Y at %I:%M %p") if getattr(t, 'date_submitted', getattr(t, 'date_done', None)) else ''
+        }
+
+    tickets = []
+
+    if status == 'Done':
+        q = DoneTicket.query
+        if department != 'All':
+            q = q.filter_by(department=department)
+        # If maintenance user, restrict to their department
+        if current_user.role == 'maintenance':
+            q = q.filter_by(department=current_user.department)
+        done_rows = q.all()
+        tickets = [ticket_to_dict(d) for d in done_rows]
+
+    elif status == 'All':
+        # Standard Tickets (pending/approved/etc)
+        q = Ticket.query
+        if current_user.role == 'maintenance':
+            q = q.filter_by(category=current_user.department)
+        elif current_user.role == 'employee':
+            q = q.filter_by(submitted_by=current_user.id)
+        if department != 'All' and current_user.role == 'admin':
+            q = q.filter_by(category=department)
+        tickets = [ticket_to_dict(t) for t in q.all()]
+
+        # Append DoneTicket rows if requested (All includes Done)
+        dq = DoneTicket.query
+        if department != 'All':
+            dq = dq.filter_by(department=department)
+        if current_user.role == 'maintenance':
+            dq = dq.filter_by(department=current_user.department)
+        tickets += [ticket_to_dict(d) for d in dq.all()]
+
+    # OPTIONAL: (Pending / Approved) query Ticket table only
+    else:
+        q = Ticket.query
+        if current_user.role == 'maintenance':
+            q = q.filter_by(category=current_user.department)
+        elif current_user.role == 'employee':
+            q = q.filter_by(submitted_by=current_user.id)
+        if status != 'All':
+            q = q.filter_by(status=status)
+        if department != 'All' and current_user.role == 'admin':
+            q = q.filter_by(category=department)
+        tickets = [ticket_to_dict(t) for t in q.all()]
+
+    return jsonify(tickets)
 
 @app.route('/logout')
 @login_required
