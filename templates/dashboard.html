@@ -6,52 +6,57 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='maintenance_ticket.png') }}">
 </head>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <body>
-<header>
+<header style="background-color:#f28b82; color: white; padding: 20px;">
     <div class="title">
-        <h1>SIMPLE MAINTENANCE REQUEST PROJECT<br></h1>
+        <h1 style="font-weight: bold;">SIMPLE MAINTENANCE REQUEST PROJECT</h1>
         <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
     </div>
-    <a class="logout-link" href="{{ url_for('logout') }}">LOG OUT</a>
+    <a class="logout-link" href="{{ url_for('logout') }}"
+       style="background-color: rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none;">
+        LOG OUT
+    </a>
 </header>
 
-<div class="container">
-    <div class="user-info">
+<div class="container mt-4 mb-5">
+    <div class="user-info mb-4">
         <h2>Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
-        <p>Your role: {{ user.role|upper }}</p>
+        <p>Your role: <strong>{{ user.role|upper }}</strong></p>
     </div>
 
-    <h3>Your Tickets:</h3>
+    <hr>
+    <h3 class="mb-3">Your Tickets:</h3>
 
     {% if tickets %}
-    <div class="requests">
+    <div class="row">
         {% for ticket in tickets %}
-        <div class="request-card" style="background-color:#f28b82; padding: 15px; border-radius: 10px; max-width: 350px; margin-bottom: 15px;">
-            <h4 style="font-weight:bold;">{{ ticket.title }}</h4>
-            <p>Status: {{ ticket.status }}</p>
-            <p>Department: {{ ticket.category|upper }}</p>
-            <p>Submitted By: {{ ticket.submitted_name }}</p>
-            <p>Date Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm border-danger">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ ticket.title }}</h5>
+                    <p class="mb-1"><strong>Status:</strong> {{ ticket.status }}</p>
+                    <p class="mb-1"><strong>Department:</strong> {{ ticket.category|upper }}</p>
+                    <p class="mb-1"><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
+                    <p class="text-muted"><small>Date Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</small></p>
 
-            {% if ticket.status == 'Pending' %}
-            <div class="d-flex justify-content-start gap-2 mt-2">
-                <form method="POST" action="{{ url_for('delete_ticket', ticket_id=ticket.id) }}">
-                    <button type="submit" class="btn btn-danger btn-sm">Cancel Request</button>
-                </form>
-                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.id }}">View</button>
-                <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ ticket.id }}">Edit</button>
+                    <div class="d-flex justify-content-start gap-2 mt-3">
+                        <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=ticket.id) }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Cancel Request</button>
+                        </form>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.id }}">View</button>
+                        <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                    </div>
+                </div>
             </div>
-            {% endif %}
         </div>
 
-        <!-- VIEW BUTTON -->
+        <!-- VIEW MODAL -->
         <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <p><strong>Description:</strong></p>
@@ -67,74 +72,46 @@
                 </div>
             </div>
         </div>
-
-        <!-- EDIT BUTTON -->
-        <div class="modal fade" id="editModal{{ ticket.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ ticket.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form method="POST" action="{{ url_for('edit_ticket', ticket_id=ticket.id) }}">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="editModalLabel{{ ticket.id }}">Edit Ticket</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <label for="title{{ ticket.id }}">Title:</label>
-                            <input type="text" id="title{{ ticket.id }}" name="title" class="form-control" value="{{ ticket.title }}" required>
-
-                            <label for="description{{ ticket.id }}" class="mt-2">Description:</label>
-                            <textarea id="description{{ ticket.id }}" name="description" class="form-control" rows="3" required>{{ ticket.description }}</textarea>
-
-                            <label for="category{{ ticket.id }}" class="mt-2">Department Needed:</label>
-                            <select id="category{{ ticket.id }}" name="category" class="form-select" required>
-                                <option value="plumbing" {% if ticket.category=='plumbing' %}selected{% endif %}>Plumbing</option>
-                                <option value="electrical" {% if ticket.category=='electrical' %}selected{% endif %}>Electrical</option>
-                                <option value="it" {% if ticket.category=='it' %}selected{% endif %}>IT Support</option>
-                                <option value="carpentry" {% if ticket.category=='carpentry' %}selected{% endif %}>Carpentry</option>
-                            </select>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-success">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
         {% endfor %}
     </div>
     {% else %}
-    <p>No tickets to show.</p>
+    <p>No tickets submitted yet.</p>
     {% endif %}
 </div>
 
 <!-- Ticket Submission Form -->
-<div class="ticket-form">
+<div class="container mb-5">
     <h3>Submit a Maintenance Request</h3>
     <form method="POST" action="{{ url_for('submit_ticket') }}">
-        <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" required><br><br>
+        <div class="mb-3">
+            <label for="title" class="form-label">Title:</label>
+            <input type="text" id="title" name="title" class="form-control" required>
+        </div>
 
-        <label for="description">Description:</label><br>
-        <textarea id="description" name="description" rows="4" required></textarea><br><br>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description:</label>
+            <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
+        </div>
 
-        <label for="category">Department Needed:</label><br>
-        <select id="category" name="category" required>
-            <option value="">-- Select Department --</option>
-            <option value="plumbing">Plumbing</option>
-            <option value="electrical">Electrical</option>
-            <option value="it">IT Support</option>
-            <option value="carpentry">Carpentry</option>
-        </select><br><br>
+        <div class="mb-3">
+            <label for="category" class="form-label">Department Needed:</label>
+            <select id="category" name="category" class="form-select" required>
+                <option value="">-- Select Department --</option>
+                <option value="plumbing">Plumbing</option>
+                <option value="electrical">Electrical</option>
+                <option value="it">IT Support</option>
+                <option value="carpentry">Carpentry</option>
+            </select>
+        </div>
 
-        <button type="submit">Submit Ticket</button>
+        <button type="submit" class="btn btn-primary">Submit Ticket</button>
     </form>
 </div>
 
-
-<br><br><br><p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
-
+<br><br><br>
+<p class="mb-0 text-center">&copy; 2025 | Designed by Poging Noy TEOPE</p>
 
 <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
