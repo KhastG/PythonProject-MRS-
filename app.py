@@ -270,27 +270,19 @@ def approve_ticket(ticket_id):
     flash("Ticket approved successfully!", "success")
     return redirect(url_for('maintenance_dashboard'))
 
-@app.route('/edit_ticket/<int:ticket_id>', methods=['POST'])
-@login_required
+@app.route('/edit_ticket/<int:ticket_id>', methods=['GET', 'POST'])
 def edit_ticket(ticket_id):
-    ticket = Ticket.query.get(ticket_id)
+    ticket = Ticket.query.get_or_404(ticket_id)
 
-    if not ticket:
-        flash("Ticket not found.", "danger")
+    if request.method == 'POST':
+        ticket.title = request.form['title']
+        ticket.description = request.form['description']
+        ticket.category = request.form['category']
+        db.session.commit()
+        flash('Ticket updated successfully!', 'success')
         return redirect(url_for('dashboard'))
 
-    # Only the ticket owner can edit, and only if still pending
-    if ticket.submitted_by != current_user.id or ticket.status != 'Pending':
-        flash("You cannot edit this ticket.", "danger")
-        return redirect(url_for('dashboard'))
-
-    ticket.title = request.form['title']
-    ticket.description = request.form['description']
-    ticket.category = request.form['category']
-
-    db.session.commit()
-    flash("Ticket updated successfully!", "success")
-    return redirect(url_for('dashboard'))
+    return render_template('edit_ticket.html', ticket=ticket)
 
 @app.route('/done_ticket/<int:ticket_id>', methods=['POST'])
 @login_required

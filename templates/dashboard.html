@@ -37,26 +37,32 @@
                     <p class="mb-1"><strong>Status:</strong> {{ ticket.status }}</p>
                     <p class="mb-1"><strong>Department:</strong> {{ ticket.category|upper }}</p>
                     <p class="mb-1"><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
-                    <p class="text-muted"><small>Date Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</small></p>
+                    <p class="text-muted"><small>Date Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M
+                        %p') }}</small></p>
 
                     <div class="d-flex justify-content-start gap-2 mt-3">
                         <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=ticket.id) }}">
                             <button type="submit" class="btn btn-danger btn-sm">Cancel Request</button>
                         </form>
-                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.id }}">View</button>
-                        <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#viewModal{{ ticket.id }}">View
+                        </button>
+                        <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}"
+                           class="btn btn-warning btn-sm">Edit</a>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- VIEW MODAL -->
-        <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
+        <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
+             aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title }}</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <p><strong>Description:</strong></p>
@@ -64,7 +70,8 @@
                         <hr>
                         <p><strong>Category:</strong> {{ ticket.category }}</p>
                         <p><strong>Status:</strong> {{ ticket.status }}</p>
-                        <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p')
+                            }}</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -79,36 +86,41 @@
     {% endif %}
 </div>
 
-<!-- Ticket Submission Form -->
-<div class="container mb-5">
-    <h3>Submit a Maintenance Request</h3>
-    <form method="POST" action="{{ url_for('submit_ticket') }}">
-        <div class="mb-3">
-            <label for="title" class="form-label">Title:</label>
-            <input type="text" id="title" name="title" class="form-control" required>
-        </div>
+<!-- Edit Ticket Modal -->
+<div class="modal fade" id="editTicketModal" tabindex="-1" aria-labelledby="editTicketLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border: 2px solid #f28b82; background-color: #fff5f5;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTicketLabel">Edit Ticket</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editTicketForm">
+          <input type="hidden" id="editTicketId">
 
-        <div class="mb-3">
-            <label for="description" class="form-label">Description:</label>
-            <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
-        </div>
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" id="editTitle" required>
+          </div>
 
-        <div class="mb-3">
-            <label for="category" class="form-label">Department Needed:</label>
-            <select id="category" name="category" class="form-select" required>
-                <option value="">-- Select Department --</option>
-                <option value="plumbing">Plumbing</option>
-                <option value="electrical">Electrical</option>
-                <option value="it">IT Support</option>
-                <option value="carpentry">Carpentry</option>
-            </select>
-        </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" id="editDescription" required></textarea>
+          </div>
 
-        <button type="submit" class="btn btn-primary">Submit Ticket</button>
-    </form>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <input type="text" class="form-control" id="editCategory" required>
+          </div>
+
+          <button type="submit" class="btn btn-danger w-100">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
-<br><br><br>
+<br><br><br><br>
 <p class="mb-0 text-center">&copy; 2025 | Designed by Poging Noy TEOPE</p>
 
 <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
