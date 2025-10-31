@@ -21,19 +21,6 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 migrate = Migrate(app, db)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Database Models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -306,12 +293,31 @@ def done_ticket(ticket_id):
         flash("Ticket not valid to mark as done.", "danger")
         return redirect(url_for('maintenance_dashboard'))
 
+    # DONE TICKET CREATION
+    done_ticket = DoneTicket(
+        ticket_id=ticket.id,
+        title=ticket.title,
+        description=ticket.description,
+        department=ticket.category,
+        employee_first_name=ticket.submitted_name.split(" ")[0] if ticket.submitted_name else "",
+        employee_last_name=" ".join(ticket.submitted_name.split(" ")[1:]) if ticket.submitted_name else "",
+        maintenance_first_name=current_user.first_name,
+        maintenance_last_name=current_user.last_name,
+        date_approved=ticket.date_approved or datetime.now(ZoneInfo("Asia/Manila")),
+        date_done=datetime.now(ZoneInfo("Asia/Manila"))
+    )
+
+    # Add DoneTicket record, update original Ticket
+    db.session.add(done_ticket)
     ticket.status = 'Done'
     ticket.approved_by = f"{ticket.approved_by or ''} • {current_user.first_name} {current_user.last_name}"
-    ticket.date_approved = ticket.date_approved or datetime.now(ZoneInfo("Asia/Manila"))
+    ticket.date_approved = done_ticket.date_approved
+
     db.session.commit()
+
     flash("Ticket marked as done.", "success")
     return redirect(url_for('maintenance_dashboard'))
+
 
 
 @app.route('/cancel_ticket/<int:ticket_id>', methods=['POST'])

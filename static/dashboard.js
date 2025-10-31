@@ -3,15 +3,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const statusFilter = document.getElementById('statusFilter');
     const deptFilter = document.getElementById('deptFilter');
-    const ticketContainer = document.getElementById('ticketContainer'); // use unique id
+    const ticketContainer = document.getElementById('ticketContainer'); // to be able to see yunik id
 
-    // If container missing, stop early (prevents errors)
+    // PREVENTION ERROR KUNG THE CONTAINER WAS MISSING (TO AVOID SYSTEM ERR)
     if (!ticketContainer) {
         console.warn("Ticket container (#ticketContainer) not found. Filter script will not run.");
         return;
     }
 
-    // safe getter for filter values
     const getFilterValue = (el, fallback = 'All') => (el ? el.value : fallback);
 
     async function fetchTickets() {
@@ -28,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const tickets = await response.json();
-
             // Clear existing content
             ticketContainer.innerHTML = '';
 
@@ -36,14 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 ticketContainer.innerHTML = '<p>No tickets found.</p>';
                 return;
             }
-
-            // Build cards
+            // CARDSSSSSSSSS
             const fragment = document.createDocumentFragment();
             tickets.forEach(t => {
                 const col = document.createElement('div');
                 col.className = 'col-md-4';
-
-                // pick border color based on status
                 let borderClass = 'border-primary';
                 if (t.status === 'Pending') borderClass = 'border-danger';
                 else if (t.status === 'Approved') borderClass = 'border-success';
@@ -57,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <p class="mb-1"><strong>Department:</strong> ${escapeHtml((t.category || '').toUpperCase())}</p>
                             <p class="mb-1"><strong>Submitted By:</strong> ${escapeHtml(t.submitted_name || '')}</p>
                             <p class="text-muted"><small>Submitted: ${escapeHtml(t.date_submitted || '')}</small></p>
+                            ${t.status === 'Approved' ? `<button class="btn btn-sm btn-success approve-btn" data-ticket-id="${t.id}">Done</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -65,13 +61,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             ticketContainer.appendChild(fragment);
 
+            // Attach approve button listeners dynamically after loading tickets
+            attachApproveListeners();
+
         } catch (err) {
             console.error("Error fetching tickets:", err);
             ticketContainer.innerHTML = '<p class="text-danger">Error fetching tickets (network).</p>';
         }
     }
 
-    // small HTML-escape utility to avoid injection
+    //PROTECTION FOR INJECTIONS
     function escapeHtml(str) {
         if (!str && str !== 0) return '';
         return String(str)
@@ -82,10 +81,23 @@ document.addEventListener("DOMContentLoaded", () => {
             .replaceAll("'", '&#39;');
     }
 
-    // wire events if filters exist
+    // reloader of the webpage
+    function attachApproveListeners() {
+        document.querySelectorAll('.approve-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const ticketId = btn.dataset.ticketId;
+                const res = await fetch(`/approve_ticket/${ticketId}`, { method: 'POST' });
+                if (res.ok) {
+                    console.log(`Ticket ${ticketId} marked done.`);
+                    fetchTickets();
+                }
+            });
+        });
+    }
+
     if (statusFilter) statusFilter.addEventListener('change', fetchTickets);
     if (deptFilter) deptFilter.addEventListener('change', fetchTickets);
 
-    // initial fetch so page reflects current filter state
     fetchTickets();
 });

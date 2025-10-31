@@ -13,10 +13,10 @@
             <div class="card border-primary shadow-sm">
                 <div class="card-body">
                     <h5 class="card-title">{{ user.first_name }} {{ user.last_name }}</h5>
-                    <p class="mb-1"><strong>Role:</strong> {{ user.role|capitalize }}</p>
+                    <p class="mb-1"><strong>Role:</strong> {{ user.role |upper}}</p>
+                    <p class="mb-1"><strong>Department:</strong> {{ user.department |upper }}</p>
                     <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
                     {% if user.department %}
-                    <p class="mb-1"><strong>Department:</strong> {{ user.department }}</p>
                     {% endif %}
                 </div>
             </div>
