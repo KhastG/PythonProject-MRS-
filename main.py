@@ -204,23 +204,10 @@ def maintenance_dashboard():
 @app.route('/admin_dashboard')
 @login_required
 def admin_dashboard():
-    if current_user.role != 'admin':
-        flash("You are not authorized to access this page.", "danger")
-        return redirect(url_for('dashboard'))
-
-    # FETCH ALL THE USERS
     users = User.query.all()
+    tickets = Ticket.query.order_by(Ticket.id.desc()).all()
+    return render_template('admin_dashboard.html', user=current_user, users=users, tickets=tickets)
 
-    # FETCH ALL THE TICKETS
-    tickets = Ticket.query.all()
-
-    # FILTER BY DEPARTMENT
-    department_filter = request.args.get('department')
-    if department_filter:
-        tickets = Ticket.query.filter_by(category=department_filter).all()
-
-    done_tickets = DoneTicket.query.all()
-    return render_template('admin_dashboard.html', users=users, tickets=tickets, done_tickets=done_tickets)
 
 @app.route('/submit_ticket', methods=['POST'])
 @login_required
@@ -449,6 +436,11 @@ def filter_tickets():
         if department != 'All' and current_user.role == 'admin':
             q = q.filter_by(category=department)
         tickets = [ticket_to_dict(t) for t in q.all()]
+
+    try:
+        tickets.sort(key=lambda x: x.get('id', 0), reverse=True)
+    except Exception as e:
+        app.logger.warning(f"Sorting error in filter_tickets: {e}")
 
     return jsonify(tickets)
 
