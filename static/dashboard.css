@@ -65,15 +65,22 @@ h2, h3 {
 .request-card {
     background-color: #F28B82;
     color: white;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
     width: 250px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .card {
-  min-height: 230px;
+  min-height: 250px;
   word-wrap: break-word;
+  width: 100%;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .btn.btn-warning.btn-sm {
@@ -147,6 +154,13 @@ a:hover {
 .ticket-form button:hover {
     background-color: #F28B82;
 }
+.row {
+  margin-top: 20px;
+ }
+
+.ticket-scroll-container .row {
+  margin-top: 20px;
+}
 
 .delete-btn {
     background-color: #f44336;
@@ -171,7 +185,3 @@ footer {
     bottom: 0;
     width: 100%;
 }
-
-
-
-

@@ -1,9 +1,16 @@
+window.addEventListener("load", () => {
+    setTimeout(fetchTickets, 150); // small delay to let defaults apply
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Dashboard loaded!");
 
     const statusFilter = document.getElementById('statusFilter');
     const deptFilter = document.getElementById('deptFilter');
     const ticketContainer = document.getElementById('ticketContainer'); // to be able to see yunik id
+
+    if (deptFilter && !deptFilter.value) deptFilter.value = 'All';
+    if (statusFilter && !statusFilter.value) statusFilter.value = 'All';
 
     // PREVENTION ERROR KUNG THE CONTAINER WAS MISSING (TO AVOID SYSTEM ERR)
     if (!ticketContainer) {
@@ -14,8 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const getFilterValue = (el, fallback = 'All') => (el ? el.value : fallback);
 
     async function fetchTickets() {
-        const status = encodeURIComponent(getFilterValue(statusFilter, 'All'));
-        const dept = encodeURIComponent(getFilterValue(deptFilter, 'All'));
+        const status = encodeURIComponent(getFilterValue(statusFilter, 'All') || 'All');
+        const dept = encodeURIComponent(getFilterValue(deptFilter, 'All') || 'All');
         const url = `/filter_tickets?status=${status}&department=${dept}`;
 
         try {
@@ -100,4 +107,5 @@ document.addEventListener("DOMContentLoaded", () => {
     if (deptFilter) deptFilter.addEventListener('change', fetchTickets);
 
     fetchTickets();
+
 });

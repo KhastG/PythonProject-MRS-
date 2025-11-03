@@ -6,11 +6,16 @@
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='maintenance_ticket.png') }}">
 </head>
 <body>
-    <header>
-        <h1>SIMPLE MAINTENANCE REQUEST PROJECT</h1>
-        <a class="logout-link" href="{{ url_for('logout') }}">LOG OUT</a>
+    <header style="background-color:#f28b82; color: white; padding: 20px;">
+        <div class="title">
+            <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
+            <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
+        </div>
+        <a class="logout-link" href="{{ url_for('logout') }}"
+           style="background-color: rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none;">
+            LOG OUT
+        </a>
     </header>
-
     <div class="container">
         <h2>Submit a Ticket</h2>
         <form method="POST">

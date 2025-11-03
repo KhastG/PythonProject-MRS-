@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Employee Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}"> <!-- Universal CSS url-->
@@ -10,7 +10,7 @@
 <body>
 <header style="background-color:#f28b82; color: white; padding: 20px;">
     <div class="title">
-        <h1 style="font-weight: bold;">SIMPLE MAINTENANCE REQUEST PROJECT</h1>
+        <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
         <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
     </div>
     <a class="logout-link" href="{{ url_for('logout') }}"
@@ -30,14 +30,14 @@
         <h3 class="mb-3">Your Tickets:</h3>
 
         {% if tickets %}
-        <div class="row">
+        <div class="row mt-4" style="margin-top: 20px;">
             {% for ticket in tickets %}
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-6">
                 <div class="card mb-4 shadow-sm border-danger h-100">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold">{{ ticket.title }}</h5>
                         <p class="mb-1"><strong>Status:</strong> {{ ticket.status }}</p>
-                        <p class="mb-1"><strong>Department:</strong> {{ ticket.category|upper }}</p>
+                        <p class="mb-1"><strong>Department:</strong> {{ ticket.category| upper }}</p>
                         <p class="mb-1"><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
                         <p class="text-muted mt-auto"><small>Date Submitted: {{ ticket.date_submitted.strftime('%B %d,
                             %Y at %I:%M %p') }}</small></p>

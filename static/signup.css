@@ -1,91 +1,98 @@
-body::-webkit-scrollbar {
-    display: none;
-}
-html, body {
-    height: 100%;
-
-}
-.flash-message.error {
-  color: #fff;
-  background-color: #e74c3c;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-  margin-bottom: 15px;
-}
-
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fff8f6;
-    color: #333;
-    text-align: center;
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background-color: #fff5f5;
 }
 
-header {
-    background-color: #E57373;
-    padding: 10px;
-    color: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-}
-
+/* Center the form vertically */
 .form-box {
-    background-color: #fff8f6;
-    padding: 40px;
-    margin: 10px auto;
-    width: 350px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 50px auto; /* adds nice top spacing */
+  background: #fffaf9;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f28b82;
 }
 
-.form-box input,
-.form-box select {
-    width: 90%;
-    padding: 8px;
-    margin: 5px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+.form-box h2 {
+  text-align: center;
+  color: #f28b82;
+  margin-bottom: 25px;
 }
 
+/* Labels & inputs */
+label {
+  display: block;
+  margin-bottom: 6px;
+  color: #444;
+  font-weight: 500;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+}
+
+input:focus, select:focus {
+  border-color: #f28b82;
+  box-shadow: 0 0 4px rgba(242, 139, 130, 0.4);
+}
+
+/* Button styling */
 button {
-    background-color: #F28B82;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
+  background-color: #f28b82;
+  color: white;
+  border: none;
+  padding: 10px 0;
+  width: 100%;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
 button:hover {
-    background-color: #E57373;
+  background-color: #e57368;
 }
 
-/* Toast styling */
-.toast {
-    visibility: hidden;
-    min-width: 250px;
-    margin-left: -125px;
-    background-color: #4BB543; /* green for success */
-    color: white;
-    text-align: center;
-    border-radius: 8px;
-    padding: 16px;
-    position: fixed;
-    z-index: 9999;
-    left: 50%;
-    top: 30px;
-    font-size: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    transition: visibility 0s, opacity 0.5s linear;
-    opacity: 0;
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 40px;
+  color: #999;
+  font-size: 14px;
 }
 
-.toast.show {
-    visibility: visible;
-    opacity: 1;
+a {
+  color: #f28b82;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Header styling */
+header {
+  text-align: center;
+  background-color: #f28b82;
+  color: white;
+  padding: 30px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.title h1 {
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+.title p {
+  font-size: 14px;
+  margin: 0;
 }
