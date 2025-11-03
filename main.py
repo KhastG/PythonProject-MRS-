@@ -10,16 +10,19 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from config import Config
 from sqlalchemy import text
+from smtplib import SMTPRecipientsRefused
 
-app = Flask(__name__)
-app.config.from_object(Config)
+app = Flask(__name__)  # <-----------------| WAG NA TONG GAGALAWIN!!!
+app.config.from_object(
+    Config)  # | this line of code refers to the connection of the db and also the email and the app password from the config.py and .env file
+#                                        |
+db = SQLAlchemy(app)  # |
+bcrypt = Bcrypt(app)  # |
+mail = Mail(app)  # |
+login_manager = LoginManager(app)  # |
+login_manager.login_view = 'login'  # |
+migrate = Migrate(app, db)  # <------------|
 
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-mail = Mail(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-migrate = Migrate(app, db)
 
 # Database Models
 class User(UserMixin, db.Model):
@@ -31,6 +34,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(50), nullable=False)
     department = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True, nullable=False)
+
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -47,6 +51,7 @@ class Ticket(db.Model):
     # EASY REFERENCE PARA SA USERS
     user = db.relationship('User', backref=db.backref('tickets', cascade='all, delete-orphan'), lazy=True)
 
+
 class DoneTicket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ticket_id = db.Column(db.Integer, nullable=False)  # reference to original ticket
@@ -60,13 +65,16 @@ class DoneTicket(db.Model):
     date_approved = db.Column(db.DateTime, nullable=False)
     date_done = db.Column(db.DateTime, nullable=False)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
 @app.route('/')
 def home():
     return redirect(url_for('login'))
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -88,14 +96,22 @@ def signup():
         session['temp_role'] = role
         session['temp_department'] = department
 
-        # Generate OTP
+        # OTP again (just like nung sa last sem na code: kukunin email tas mag ssend ng otp based on the email add na nilagay)
         otp = random.randint(100000, 999999)
         session['otp'] = otp
 
-        # Send OTP email
-        msg = Message('Your OTP Code', recipients=[email])
-        msg.body = f'Your OTP is: {otp}'
-        mail.send(msg)
+        # Send OTP email (SAFELY, added some features na pag nag enter si user ng maling email addr, this block of code will catch it)
+        try:
+            msg = Message('Your OTP Code', recipients=[email])
+            msg.body = f'Your OTP is: {otp}'
+            mail.send(msg)
+        except (SMTPRecipientsRefused, ValueError):
+            flash('Failed to send OTP. Please check your email address and try again.', 'danger')
+            return redirect(url_for('signup'))
+        except Exception as e:
+            flash('An unexpected error occurred while sending OTP.', 'danger')
+            print(f"Error sending email: {e}")
+            return redirect(url_for('signup'))
 
         return redirect(url_for('verify_otp'))
 
@@ -109,7 +125,7 @@ def verify_otp():
         stored_otp = session.get('otp')
 
         if str(entered_otp) == str(stored_otp):
-            # Restrict admin signup to only one account
+            # Restrict admin signup to only one account (for security purposes para isa lng mag ma-manage para sa lahat)
             if session['temp_role'] == 'admin':
                 existing_admin = User.query.filter_by(role='admin').first()
                 if existing_admin:
@@ -131,7 +147,7 @@ def verify_otp():
                 db.session.commit()
                 flash('Account created successfully! You can now log in.', 'success')
 
-                # Clear session
+                # Clear session once an account was created inside the SIGN-UP page
                 session.pop('otp', None)
                 session.pop('temp_first_name', None)
                 session.pop('temp_last_name', None)
@@ -185,6 +201,7 @@ def dashboard():
     tickets = Ticket.query.filter_by(submitted_by=current_user.id).all()
     return render_template('dashboard.html', user=current_user, tickets=tickets)
 
+
 @app.route('/maintenance_dashboard')
 @login_required
 def maintenance_dashboard():
@@ -200,6 +217,7 @@ def maintenance_dashboard():
             ticket.date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
 
     return render_template('maintenance_dashboard.html', user=current_user, tickets=tickets)
+
 
 @app.route('/admin_dashboard')
 @login_required
@@ -234,6 +252,7 @@ def submit_ticket():
     flash("Ticket submitted successfully!", "success")
     return redirect(url_for('dashboard'))
 
+
 @app.route('/approve_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
 def approve_ticket(ticket_id):
@@ -254,6 +273,7 @@ def approve_ticket(ticket_id):
     flash("Ticket approved successfully!", "success")
     return redirect(url_for('maintenance_dashboard'))
 
+
 @app.route('/edit_ticket/<int:ticket_id>', methods=['GET', 'POST'])
 def edit_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
@@ -268,6 +288,7 @@ def edit_ticket(ticket_id):
 
     return render_template('edit_ticket.html', ticket=ticket)
 
+
 @app.route('/done_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
 def done_ticket(ticket_id):
@@ -280,7 +301,7 @@ def done_ticket(ticket_id):
         flash("Ticket not valid to mark as done.", "danger")
         return redirect(url_for('maintenance_dashboard'))
 
-    # DONE TICKET CREATION
+    # CREATING DONE TICKET BA
     done_ticket = DoneTicket(
         ticket_id=ticket.id,
         title=ticket.title,
@@ -306,7 +327,6 @@ def done_ticket(ticket_id):
     return redirect(url_for('maintenance_dashboard'))
 
 
-
 @app.route('/cancel_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
 def cancel_ticket(ticket_id):
@@ -315,7 +335,8 @@ def cancel_ticket(ticket_id):
         flash("Ticket not found.", "danger")
         return redirect(url_for('maintenance_dashboard'))
 
-    if current_user.role == 'maintenance' or (current_user.role == 'employee' and ticket.submitted_by == current_user.id):
+    if current_user.role == 'maintenance' or (
+            current_user.role == 'employee' and ticket.submitted_by == current_user.id):
         db.session.delete(ticket)
         db.session.commit()
         flash("Ticket cancelled successfully.", "success")
@@ -339,12 +360,12 @@ def delete_ticket(ticket_id):
         flash("You can only delete your own tickets.", "danger")
         return redirect(url_for('dashboard'))
 
-    #FEATURE: ALLOWING THE USER TO DELETE WHILE THE TICKET IS PENDING
+    # FEATURE: ALLOWING THE USER TO DELETE WHILE THE TICKET IS PENDING
     if ticket.status == 'Pending':
         db.session.delete(ticket)
         db.session.commit()
 
-        # FIX THE DB IF THE EMPLOYEE DELETES THE TICKET
+        # FIX THE Database table for users 'id (which has a feature of auto incrementation)' IF THE EMPLOYEE DELETES THE TICKET
         if Ticket.query.count() == 0:
             db.session.execute(text("ALTER TABLE ticket AUTO_INCREMENT = 1"))
             db.session.commit()
@@ -356,21 +377,24 @@ def delete_ticket(ticket_id):
 
     return redirect(url_for('dashboard'))
 
+
 @app.route('/search_users', methods=['GET'])
 def search_users():
     query = request.args.get('q', '').strip()
 
     if query:
         results = User.query.filter(
-            (User.first_name.ilike(f'%{query}%')) |
-            (User.last_name.ilike(f'%{query}%')) |
-            (User.email.ilike(f'%{query}%')) |
-            (User.role.ilike(f'%{query}%'))
+            (User.first_name.ilike(f'%{query}%')) |  # <----|
+            (User.last_name.ilike(f'%{query}%')) |  # | '|' means OR in LOGICAL TERM
+            (User.email.ilike(
+                f'%{query}%')) |  # | the block of code refers to getting the data from the database based on what the user searched for
+            (User.role.ilike(f'%{query}%'))  # <----|
         ).all()
     else:
         results = []
 
     return render_template('search_results.html', users=results, query=query)
+
 
 @app.route('/filter_tickets')
 @login_required
@@ -378,7 +402,7 @@ def filter_tickets():
     status = request.args.get('status', 'All')
     department = request.args.get('department', 'All')
 
-    #COMPARISONS
+    # COMPARISONS
     status = status or 'All'
     department = department or 'All'
 
@@ -389,8 +413,10 @@ def filter_tickets():
             'description': t.description,
             'status': getattr(t, 'status', 'Done'),  # Tickets have status, DoneTicket will be handled separately
             'category': getattr(t, 'category', getattr(t, 'department', '')),
-            'submitted_name': getattr(t, 'submitted_name', f"{getattr(t, 'employee_first_name', '')} {getattr(t, 'employee_last_name', '')}").strip(),
-            'date_submitted': getattr(t, 'date_submitted', getattr(t, 'date_done', None)).strftime("%B %d, %Y at %I:%M %p") if getattr(t, 'date_submitted', getattr(t, 'date_done', None)) else ''
+            'submitted_name': getattr(t, 'submitted_name',
+                                      f"{getattr(t, 'employee_first_name', '')} {getattr(t, 'employee_last_name', '')}").strip(),
+            'date_submitted': getattr(t, 'date_submitted', getattr(t, 'date_done', None)).strftime(
+                "%B %d, %Y at %I:%M %p") if getattr(t, 'date_submitted', getattr(t, 'date_done', None)) else ''
         }
 
     tickets = []
@@ -416,15 +442,21 @@ def filter_tickets():
             q = q.filter_by(category=department)
         tickets = [ticket_to_dict(t) for t in q.all()]
 
-        # Append DoneTicket rows if requested (All includes Done)
+        # Append DoneTicket rows if requested (includes 'Done')
         dq = DoneTicket.query
         if department != 'All':
             dq = dq.filter_by(department=department)
         if current_user.role == 'maintenance':
             dq = dq.filter_by(department=current_user.department)
-        tickets += [ticket_to_dict(d) for d in dq.all()]
+        done_tickets = dq.all()  # Get all done tickets from the query
 
-    # OPTIONAL: (Pending / Approved) query Ticket table only
+        for d in done_tickets:
+            ticket_dict = ticket_to_dict(d)
+            ticket_dict['is_done'] = True
+            tickets.append(ticket_dict)
+        # HOLD THIS LINE OF CODE: tickets += [ticket_to_dict(d) for d in dq.all()] eto galing AI kaya di ko gets
+
+    # OPTIONAL BLOCK OF CODE: (Pending / Approved) query Ticket table only
     else:
         q = Ticket.query
         if current_user.role == 'maintenance':
@@ -437,12 +469,15 @@ def filter_tickets():
             q = q.filter_by(category=department)
         tickets = [ticket_to_dict(t) for t in q.all()]
 
+    # This block of code tries to sort all tickets for both pending and done by their 'id' (based on the database)
+    # in descending order which is the latest will be the first one.
     try:
         tickets.sort(key=lambda x: x.get('id', 0), reverse=True)
     except Exception as e:
         app.logger.warning(f"Sorting error in filter_tickets: {e}")
 
     return jsonify(tickets)
+
 
 @app.route('/logout')
 @login_required

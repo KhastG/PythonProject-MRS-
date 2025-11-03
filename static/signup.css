@@ -5,6 +5,14 @@ html, body {
     height: 100%;
 
 }
+.flash-message.error {
+  color: #fff;
+  background-color: #e74c3c;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 15px;
+}
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
