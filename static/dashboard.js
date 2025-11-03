@@ -1,13 +1,10 @@
-window.addEventListener("load", () => {
-    setTimeout(fetchTickets, 150); // small delay to let defaults apply
-});
-
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Dashboard loaded!");
 
     const statusFilter = document.getElementById('statusFilter');
     const deptFilter = document.getElementById('deptFilter');
-    const ticketContainer = document.getElementById('ticketContainer'); // to be able to see yunik id
+    const ticketContainer = document.getElementById('ticketContainer');
+     const tickets = document.querySelectorAll("#ticketContainer .card");
 
     if (deptFilter && !deptFilter.value) deptFilter.value = 'All';
     if (statusFilter && !statusFilter.value) statusFilter.value = 'All';
@@ -102,6 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
+    window.addEventListener("load", () => {
+        setTimeout(fetchTickets, 150); // small delay to let defaults apply
+    });
 
     if (statusFilter) statusFilter.addEventListener('change', fetchTickets);
     if (deptFilter) deptFilter.addEventListener('change', fetchTickets);
