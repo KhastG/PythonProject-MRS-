@@ -62,3 +62,9 @@ button {
 button:hover {
     background-color: #E57373;
 }
+
+footer {
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+}

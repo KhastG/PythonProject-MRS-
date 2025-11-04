@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Verify OTP</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
-    <link rel="icon" type="image/png"  href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
 </head>
 <body>
-    <div id="toast" class="toast"></div>
+    <header>
+        <div class="title">
+            <h1>MAINTENANCE TICKETING SYSTEM</h1>
+            <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
+        </div>
+    </header>
+
     <div class="form-box">
         <h2>Email Verification</h2>
         <p>Please enter the 6-digit OTP sent to your email.</p>
@@ -17,5 +23,12 @@
             <button type="submit">Verify</button>
         </form>
     </div>
+
+    <footer>
+        <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
+    </footer>
+
+    <div id="toast"></div>
+    <script src="{{ url_for('static', filename='signup.js') }}"></script>
 </body>
 </html>

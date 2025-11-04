@@ -62,6 +62,13 @@ header {
   color: #f28b82;
 }
 
+.form-box p {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+}
+
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -79,6 +86,39 @@ label {
   color: #444;
   font-weight: 500;
 }
+
+.password-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f28b82;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 0;
+  line-height: normal;
+  transform: translateY(-40%);
+}
+
+.password-info:hover {
+  background-color: #e57368;
+}
+
+.password-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  vertical-align: middle;
+}
+
+
+
 
 input, select {
   width: 100%;
@@ -134,4 +174,34 @@ footer {
   margin-top: 40px;
   color: #999;
   font-size: 14px;
+}
+
+#toast {
+  visibility: hidden;
+  min-width: 250px;
+  background-color: #f28b82;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  padding: 16px;
+  position: fixed;
+  z-index: 10000;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.5s, bottom 0.5s;
+}
+
+#toast.show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 50px;
+}
+
+footer {
+    color: white;
+    text-align: center;
+    padding: 10px 0;
 }
