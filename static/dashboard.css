@@ -1,80 +1,80 @@
 body::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
+
 html, body {
-    height: 100%;
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fff8f6;
-    color: #333;
+  background: url('website_images/ticketing-background.png') no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff8f6;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 header {
-    background-color: #E57373;
-    padding: 20px;
-    color: white;
-    display: flex;
-    align-items: center;
-    position: relative;  /* THE POSITION FOR THE LOG-OUT BUTTON*/
-    justify-content: center; /* CENTERS THE CONTENT AT THE HEADER (TEXT)*/
+  background-color: #E57373;
+  padding: 20px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-
-
 .title p {
-    display: block;
-    text-align: center;
-    line-height: 1.4;
-    white-space: normal;
+  display: block;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff8f6;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    gap: 20px;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff8f6;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  gap: 20px;
 }
 
 h2, h3 {
-    color: #E57373;
+  color: #E57373;
 }
 
 .user-info {
-    margin-bottom: 20px;
-    text-align: left;
+  margin-bottom: 20px;
+  text-align: left;
 }
 
 .user-info p {
-    margin: 5px 0;
+  margin: 5px 0;
 }
 
 .requests {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: flex-start;
 }
 
 .request-card {
-    background-color: #F28B82;
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 250px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background-color: #F28B82;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 250px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .card {
   min-height: 250px;
-  word-wrap: break-word;
   width: 100%;
+  word-wrap: break-word;
 }
 
 .card-body {
@@ -84,104 +84,102 @@ h2, h3 {
 }
 
 .btn.btn-warning.btn-sm {
-  line-height: 1.4; /* Adjust this value until it looks perfect */
+  line-height: 1.4;
   padding-top: 5px;
 }
 
 a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
 }
 
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .logout-link {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #F28B82;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: bold;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #F28B82;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
 }
 
 .logout-link:hover {
-    background-color: #E57373;
+  background-color: #E57373;
 }
 
 .ticket-form {
-    max-width: 800px;
-    margin: 0 auto 40px auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 0 auto 40px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .ticket-form h3 {
-    color: #E57373;
-    margin-top: 0;
+  color: #E57373;
+  margin-top: 0;
 }
 
 .ticket-form input,
 .ticket-form textarea,
 .ticket-form select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-top: 5px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 5px;
 }
 
 .ticket-form button {
-    margin-top: 10px;
-    background-color: #E57373;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: bold;
+  margin-top: 10px;
+  background-color: #E57373;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: bold;
 }
 
 .ticket-form button:hover {
-    background-color: #F28B82;
+  background-color: #F28B82;
 }
-.row {
-  margin-top: 20px;
- }
 
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.delete-btn:hover {
+  background-color: #e53935;
+}
+
+.row,
 .ticket-scroll-container .row {
   margin-top: 20px;
 }
 
-.delete-btn {
-    background-color: #f44336;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.delete-btn:hover {
-    background-color: #e53935;
-}
-
 footer {
-    margin-top: auto;
-    text-align: center;
-    padding: 15px 0;
-    background-color: transparent;
-    position: relative;
-    bottom: 0;
-    width: 100%;
+  margin-top: auto;
+  text-align: center;
+  padding: 15px 0;
+  background-color: transparent;
+  position: relative;
+  bottom: 0;
+  width: 100%;
 }

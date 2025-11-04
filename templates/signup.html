@@ -1,63 +1,84 @@
 <!DOCTYPE html>
-<html lang="eng">
+<html lang="en">
 <head>
     <title>Sign Up</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='maintenance_ticket.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
 </head>
 <body>
-    <header style="background-color:#f28b82; color: white; padding: 20px;">
+    <header>
         <div class="title">
-            <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
+            <h1>MAINTENANCE TICKETING SYSTEM</h1>
             <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
         </div>
     </header>
+
     <div class="form-box">
         <h2>Create an Account</h2>
 
-        <form method="POST" action="/signup">
-            <label for="first_name">First Name:</label><br>
-            <input type="text" id="first_name" name="first_name" required><br><br>
+        <form method="POST" action="/signup" id="signupForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
 
-            <label for="last_name">Last Name:</label><br>
-            <input type="text" id="last_name" name="last_name" required><br><br>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
 
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required><br><br>
+                <div class="form-group">
+                    <label for="last_name">Last Name:</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
 
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required><br><br>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
 
-            <label for="email">Email:</label><br>
-            <input type="email" id="email" name="email" required><br><br>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
 
-            <label for="role">Role:</label><br>
-            <select id="role" name="role" onchange="toggleMaintenanceDropdown()" required>
-                <option value="">-- Select Role --</option>
-                <option value="employee">Employee</option>
-                <option value="maintenance">Maintenance</option>
-            </select><br><br>
-
-            <div id="maintenanceTypeDiv" style="display:none;">
-                <label for="maintenanceType">Maintenance Type:</label><br>
-                <select id="maintenanceType" name="maintenanceType" disabled required>
-                    <option value="">-- Select Maintenance Type --</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="it">IT Support</option>
-                    <option value="carpentry">Carpentry</option>
-                </select><br><br>
+                <div class="form-group">
+                    <label for="confirm_password">Re-enter Password:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
             </div>
 
-            <button type="submit">Sign Up</button>
+            <div class="centered-fields">
+                <label for="role">Role:</label>
+                <select id="role" name="role" required>
+                    <option value="">-- Select Role --</option>
+                    <option value="employee">Employee</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+
+                <div id="maintenanceTypeDiv" style="display:none;">
+                    <label for="maintenanceType">Maintenance Type:</label>
+                    <select id="maintenanceType" name="maintenanceType" disabled required>
+                        <option value="">-- Select Maintenance Type --</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="electrical">Electrical</option>
+                        <option value="it">IT Support</option>
+                        <option value="carpentry">Carpentry</option>
+                    </select>
+                </div>
+
+                <button type="submit">Sign Up</button>
+            </div>
         </form>
 
-        <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+        <p class="login-text">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
     </div>
 
     <footer>
         <p>&copy; 2025 | Designed by Poging Noy TEOPE</p>
     </footer>
-<script src="{{ url_for('static', filename='signup.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='signup.js') }}"></script>
 </body>
 </html>

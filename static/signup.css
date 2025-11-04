@@ -1,10 +1,16 @@
+body::-webkit-scrollbar {
+    display: none;
+}
+
 body {
+  background: url('website_images/ticketing-background.png') no-repeat center center fixed;
+  background-size: cover;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  text-align: center;
   margin: 0;
-  padding: 0;
-  font-family: "Poppins", sans-serif;
-  background-color: #fff5f5;
+  padding-top: 120px;
   opacity: 0;
-  transition: opacity 0.5s ease;
   transform: translateX(30px);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
@@ -19,24 +25,54 @@ body.fade-out {
   transform: translateX(-30px);
 }
 
-/* Center the form vertically */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f28b82;
+  color: white;
+  text-align: center;
+  padding: 30px 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.title h1 {
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+.title p {
+  font-size: 14px;
+  margin: 0;
+}
+
 .form-box {
-  max-width: 400px;
-  margin: 50px auto; /* adds nice top spacing */
+  max-width: 700px;
+  margin: 50px auto;
   background: #fffaf9;
-  padding: 40px;
+  padding: 40px 40px 40px 40px;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid #f28b82;
 }
 
 .form-box h2 {
-  text-align: center;
   color: #f28b82;
-  margin-bottom: 25px;
 }
 
-/* Labels & inputs */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 40px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  text-align: left;
+}
+
 label {
   display: block;
   margin-bottom: 6px;
@@ -58,29 +94,30 @@ input:focus, select:focus {
   box-shadow: 0 0 4px rgba(242, 139, 130, 0.4);
 }
 
-/* Button styling */
+.centered-fields {
+  margin-top: 20px;
+  text-align: center;
+}
+
 button {
   background-color: #f28b82;
   color: white;
   border: none;
   padding: 10px 0;
-  width: 100%;
+  width: 60%;
   border-radius: 6px;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.3s;
+  margin-top: 20px;
 }
 
 button:hover {
   background-color: #e57368;
 }
 
-/* Footer */
-footer {
-  text-align: center;
-  margin-top: 40px;
-  color: #999;
-  font-size: 14px;
+.login-text {
+  margin-top: 20px;
 }
 
 a {
@@ -92,21 +129,9 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Header styling */
-header {
+footer {
   text-align: center;
-  background-color: #f28b82;
-  color: white;
-  padding: 30px 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.title h1 {
-  font-size: 28px;
-  margin-bottom: 5px;
-}
-
-.title p {
+  margin-top: 40px;
+  color: #999;
   font-size: 14px;
-  margin: 0;
 }
