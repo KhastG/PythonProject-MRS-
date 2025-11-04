@@ -3,6 +3,20 @@ body {
   padding: 0;
   font-family: "Poppins", sans-serif;
   background-color: #fff5f5;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+body.fade-in {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+body.fade-out {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 
 /* Center the form vertically */
