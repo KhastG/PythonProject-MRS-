@@ -12,6 +12,7 @@ from config import Config
 from sqlalchemy import text
 from smtplib import SMTPRecipientsRefused
 
+
 app = Flask(__name__)  # <-----------------| WAG NA TONG GAGALAWIN!!!
 app.config.from_object(Config)  #          | this line of code refers to the connection of the db and also the email and the app password from the config.py and .env file
 #                                          |
@@ -21,7 +22,6 @@ mail = Mail(app)  #                        |
 login_manager = LoginManager(app)  #       |
 login_manager.login_view = 'login'  #      |
 migrate = Migrate(app, db)  # <------------|
-
 
 # Database Models
 #users
@@ -34,6 +34,7 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(50), nullable=False)
     department = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True, nullable=False)
+    is_approved = db.Column(db.Boolean, default=False)
 
 #tickets
 class Ticket(db.Model):
@@ -133,14 +134,15 @@ def verify_otp():
                 password=bcrypt.generate_password_hash(session['temp_password']).decode('utf-8'),
                 email=session['temp_email'],
                 role=session['temp_role'],
-                department=session['temp_department']
+                department=session['temp_department'],
+                is_approved = False
             )
 
             try:
                 #adding this to db then committing it so that it goes to the database
                 db.session.add(new_user)
                 db.session.commit()
-                flash('Account created successfully! You can now log in.', 'success')
+                flash('Your account has been created and is pending admin approval.', 'info')
 
                 # Clear session once an account was created inside the SIGN-UP page
                 session.pop('otp', None)
@@ -165,6 +167,46 @@ def verify_otp():
 
     return render_template('verify_otp.html')
 
+@app.route('/pending_accounts')
+def pending_accounts():
+    # Fetch users that are NOT approved and NOT admins
+    pending_users = User.query.filter(
+        ((User.is_approved == None) | (User.is_approved == False)),
+        User.role != "admin"
+    ).all()
+
+    result = []
+    for user in pending_users:
+        result.append({
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "department": user.department,
+            "is_approved": "TRUE" if user.is_approved else "FALSE"
+        })
+
+    return jsonify(result)
+
+@app.route('/update_account_status/<int:user_id>', methods=['POST'])
+def update_account_status(user_id):
+    data = request.get_json()
+    approve = data.get('approve')
+
+    user = User.query.get_or_404(user_id)
+
+    if approve:
+        user.is_approved = True
+        msg = f"User {user.username} approved successfully."
+    else:
+        db.session.delete(user)
+        msg = f"User {user.username} rejected and removed."
+
+    db.session.commit()
+    return jsonify({"message": msg})
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -174,6 +216,9 @@ def login():
 
         user = User.query.filter_by(username=username).first()
         if user and bcrypt.check_password_hash(user.password, password):
+            if not user.is_approved and user.role != 'admin':
+                flash('Your account is pending admin approval.', 'warning')
+                return redirect(url_for('login'))
             login_user(user)
             flash('Login successful!', 'success')
             # redirect to proper dashboard based on role
@@ -183,6 +228,9 @@ def login():
                 return redirect(url_for('maintenance_dashboard'))
             elif user.role == 'admin':
                 return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid username or password.', 'danger')
+            return redirect(url_for('login'))
 
     return render_template('login.html')
 
