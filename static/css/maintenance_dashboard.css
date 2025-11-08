@@ -1,0 +1,183 @@
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  background: url('../website_images/ticketing-background.png') no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff8f6;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: #f28b82;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title h1 {
+  font-weight: bold;
+  margin: 0;
+}
+
+.title p {
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.logout-link {
+  background-color: rgba(255,255,255,0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.logout-link:hover {
+  background-color: rgba(255,255,255,0.5);
+}
+
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff8f6;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  gap: 20px;
+}
+
+.user-info h2 {
+  margin: 0 0 5px 0;
+}
+
+.user-info p {
+  margin: 2px 0;
+}
+
+.d-flex.gap-2 {
+  margin-bottom: 15px;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.card-body h5 {
+  margin-bottom: 10px;
+}
+
+.card-body p {
+  margin-bottom: 5px;
+}
+
+.border-danger {
+  border: 2px solid #dc3545 !important;
+}
+
+.border-success {
+  border: 2px solid #28a745 !important;
+}
+
+.border-secondary {
+  border: 2px solid #6c757d !important;
+}
+
+.btn {
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0069d9;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+form.d-flex input.form-control {
+  flex: 1;
+}
+
+form.d-flex button {
+  flex-shrink: 0;
+}
+
+.modal-body p {
+  margin: 0 0 5px 0;
+}
+
+.modal-body hr {
+  margin: 10px 0;
+}
+
+footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 15px 0;
+  background-color: transparent;
+  width: 100%;
+  color: white;
+}
+
+#noTicketsMessage {
+  display: none;
+  margin-top: 20px;
+}

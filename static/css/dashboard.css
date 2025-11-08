@@ -1,0 +1,160 @@
+/* Hides scrollbar */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* General page styling */
+html, body {
+  background: url('../website_images/ticketing-background.png') no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff8f6;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header styling */
+header {
+  background-color: #f28b82;
+  color: white;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title h1 {
+  font-weight: bold;
+  margin: 0;
+}
+
+.title p {
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.logout-link {
+  background-color: rgba(255,255,255,0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.logout-link:hover {
+  background-color: rgba(255,255,255,0.5);
+}
+
+/* Container styling */
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff5f5;
+  border: 2px solid #f28b82;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  gap: 20px;
+}
+
+/* User info */
+.user-info h2 {
+  margin: 0 0 5px 0;
+}
+
+.user-info p {
+  margin: 2px 0;
+}
+
+/* Cards */
+.card {
+  min-height: 250px;
+  width: 100%;
+  word-wrap: break-word;
+  border-radius: 10px;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-body p {
+  margin-bottom: 5px;
+}
+
+.border-danger {
+  border: 2px solid #dc3545 !important;
+}
+
+/* Buttons */
+.btn {
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: white;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+/* Modals */
+.modal-body p {
+  margin: 0 0 5px 0;
+}
+
+.modal-body hr {
+  margin: 10px 0;
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 15px 0;
+  background-color: transparent;
+  width: 100%;
+  color: white;
+}

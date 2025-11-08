@@ -3,7 +3,7 @@ body::-webkit-scrollbar {
 }
 
 body {
-  background: url('website_images/ticketing-background.png') no-repeat center center fixed;
+  background: url('../website_images/ticketing-background.png') no-repeat center center fixed;
   background-size: cover;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;

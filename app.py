@@ -25,6 +25,19 @@ migrate = Migrate(app, db)  # <------------|
 
 # Database Models
 #users
+class PendingUser(db.Model):
+    __tablename__ = 'pending_user'
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)   # store hashed password
+    role = db.Column(db.String(50), nullable=False)
+    department = db.Column(db.String(100))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    is_approved = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Manila")))
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
@@ -127,38 +140,80 @@ def verify_otp():
         stored_otp = session.get('otp')
 
         if str(entered_otp) == str(stored_otp):
-            new_user = User(
+            # Build hashed password
+            hashed_pw = bcrypt.generate_password_hash(session['temp_password']).decode('utf-8')
+
+            # Create PendingUser
+            pending = PendingUser(
                 first_name=session['temp_first_name'],
                 last_name=session['temp_last_name'],
                 username=session['temp_username'],
-                password=bcrypt.generate_password_hash(session['temp_password']).decode('utf-8'),
+                password=hashed_pw,
                 email=session['temp_email'],
                 role=session['temp_role'],
-                department=session['temp_department'],
-                is_approved = False
+                department=session.get('temp_department'),
+                is_approved=False
             )
 
             try:
-                #adding this to db then committing it so that it goes to the database
-                db.session.add(new_user)
+                db.session.add(pending)
                 db.session.commit()
+
+                # Send admin notification email
+                try:
+                    subject = "Another User has been Created!"
+                    created_at_str = pending.created_at.strftime('%B %d, %Y at %I:%M %p')
+                    department_line = ""
+                    if str(pending.role).lower() == "maintenance" and pending.department:
+                        department_line = f"<li><strong>Department:</strong> {pending.department}</li>"
+
+                    body_html = f"""
+                    <h3>Another User has been Created!</h3>
+                    <ul>
+                      <li><strong>Username:</strong> {pending.username}</li>
+                      <li><strong>Email:</strong> {pending.email}</li>
+                      <li><strong>Status:</strong> Pending for approval</li>
+                      <li><strong>Role:</strong> {pending.role}</li>
+                      {department_line}
+                      <li><strong>Created at:</strong> {created_at_str}</li>
+                    </ul>
+                    """
+
+                    # Save original credentials
+                    original_username = app.config['MAIL_USERNAME']
+                    original_password = app.config['MAIL_PASSWORD']
+
+                    # Use admin email credentials temporarily
+                    app.config['MAIL_USERNAME'] = app.config.get('ADMIN_MAIL_USERNAME')
+                    app.config['MAIL_PASSWORD'] = app.config.get('ADMIN_MAIL_PASSWORD')
+
+                    try:
+                        admin_email = app.config.get('ADMIN_EMAIL') or 'saixii.ixix2@gmail.com'
+                        msg = Message(subject=subject, recipients=[admin_email], html=body_html)
+                        mail.send(msg)
+                    finally:
+                        # Restore original OTP email credentials
+                        app.config['MAIL_USERNAME'] = original_username
+                        app.config['MAIL_PASSWORD'] = original_password
+
+                except Exception as email_err:
+                    app.logger.warning(f"Failed to send admin notification: {email_err}")
+                    # don't abort user flow if email fails
+
                 flash('Your account has been created and is pending admin approval.', 'info')
 
-                # Clear session once an account was created inside the SIGN-UP page
-                session.pop('otp', None)
-                session.pop('temp_first_name', None)
-                session.pop('temp_last_name', None)
-                session.pop('temp_username', None)
-                session.pop('temp_password', None)
-                session.pop('temp_email', None)
-                session.pop('temp_role', None)
-                session.pop('temp_department', None)
+                # Clear session temp data
+                for key in ('otp',
+                            'temp_first_name','temp_last_name','temp_username',
+                            'temp_password','temp_email','temp_role','temp_department'):
+                    session.pop(key, None)
 
                 return redirect(url_for('login'))
 
-            except:
-                db.session.rollback()  # undo the failed commit (if the email or the user exists in the db already)
-                flash('Username or email already exists. Please try again with a different one.', 'danger')
+            except Exception as e :
+                db.session.rollback()
+                app.logger.exception("Error creating pending user")
+                flash('Username or email already exists or an error occurred. Please try again with different credentials.', 'danger')
                 return redirect(url_for('signup'))
 
         else:
@@ -169,44 +224,92 @@ def verify_otp():
 
 @app.route('/pending_accounts')
 def pending_accounts():
-    # Fetch users that are NOT approved and NOT admins
-    pending_users = User.query.filter(
-        ((User.is_approved == None) | (User.is_approved == False)),
-        User.role != "admin"
-    ).all()
+    # Fetch records from PendingUser table (not yet approved)
+    pendings = PendingUser.query.filter((PendingUser.is_approved == None) | (PendingUser.is_approved == False)).all()
 
     result = []
-    for user in pending_users:
+    for p in pendings:
         result.append({
-            "id": user.id,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "username": user.username,
-            "email": user.email,
-            "role": user.role,
-            "department": user.department,
-            "is_approved": "TRUE" if user.is_approved else "FALSE"
+            "id": p.id,
+            "first_name": p.first_name,
+            "last_name": p.last_name,
+            "username": p.username,
+            "email": p.email,
+            "role": p.role.capitalize(),
+            "department": p.department.capitalize() if p.department else "Employee",
+            "created_at": p.created_at.strftime("%B %d, %Y at %I:%M %p"),
+            "is_approved": "TRUE" if p.is_approved else "FALSE"
         })
 
     return jsonify(result)
 
-@app.route('/update_account_status/<int:user_id>', methods=['POST'])
-def update_account_status(user_id):
-    data = request.get_json()
-    approve = data.get('approve')
+@app.route('/update_account_status/<int:pending_id>', methods=['POST'])
+def update_account_status(pending_id):
+    data = request.get_json() or {}
+    approve = data.get('approve', False)
 
-    user = User.query.get_or_404(user_id)
+    pending = PendingUser.query.get_or_404(pending_id)
 
-    if approve:
-        user.is_approved = True
-        msg = f"User {user.username} approved successfully."
-    else:
-        db.session.delete(user)
-        msg = f"User {user.username} rejected and removed."
+    try:
+        if approve:
+            # Move pending user to actual User table
+            new_user = User(
+                first_name=pending.first_name,
+                last_name=pending.last_name,
+                username=pending.username,
+                password=pending.password,  # already hashed
+                email=pending.email,
+                role=pending.role,
+                department=pending.department,
+                is_approved=True
+            )
+            db.session.add(new_user)
 
-    db.session.commit()
-    return jsonify({"message": msg})
+            # Send approval email to the user
+            try:
+                subject = "Your account has been approved"
+                created_at_str = datetime.now(ZoneInfo("Asia/Manila")).strftime('%B %d, %Y at %I:%M %p')
+                body_html = f"""
+                <p>Your account <strong>{new_user.username}</strong> has been approved by the admin.</p>
+                <p>You can now log in.</p>
+                <p><small>Approved at: {created_at_str}</small></p>
+                """
+                mail.send(Message(subject=subject, recipients=[new_user.email], html=body_html))
+            except Exception as email_err:
+                app.logger.warning(f"Failed to send approval email: {email_err}")
 
+            db.session.delete(pending)
+            db.session.commit()
+            msg = f"User {new_user.username} approved and moved to users."
+            return jsonify({"message": msg})
+
+        else:
+            # Reject: delete the pending user
+            rejected_username = pending.username
+            rejected_email = pending.email
+
+            db.session.delete(pending)
+            db.session.commit()
+
+            # Send rejection email to the user
+            try:
+                subject = "Your account has been rejected"
+                body_html = f"""
+                <p>Dear {rejected_username},</p>
+                <p>We are sorry to inform you that your account has been <strong>rejected</strong> by the admin.</p>
+                <p>If you believe this is a mistake or want to try again, please contact the administrator.</p>
+                """
+                mail.send(Message(subject=subject, recipients=[rejected_email], html=body_html))
+            except Exception as email_err:
+                app.logger.warning(f"Failed to send rejection email: {email_err}")
+
+            msg = f"User {rejected_username} rejected and removed from pending."
+            return jsonify({"message": msg})
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.exception("Error updating account status")
+        return jsonify({"message": "An error occurred while updating account status."}), 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -295,8 +398,8 @@ def existing_accounts():
         'last_name': u.last_name,
         'username': u.username,
         'email': u.email,
-        'role': u.role or "Employee",
-        'department': u.department or "N/A"
+        'role': u.role.capitalize() or "Employee",
+        'department': u.department.capitalize() or "N/A"
     } for u in users]
 
     return jsonify(user_list)

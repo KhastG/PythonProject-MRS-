@@ -3,7 +3,7 @@ body::-webkit-scrollbar {
 }
 
 html, body {
-  background: url('website_images/ticketing-background.png') no-repeat center center fixed;
+  background: url('../website_images/ticketing-background.png') no-repeat center center fixed;
   background-size: cover;
   height: 100%;
   margin: 0;
@@ -14,7 +14,6 @@ html, body {
   flex-direction: column;
   min-height: 100vh;
 }
-
 
 header {
   background-color: #E57373;
@@ -33,7 +32,30 @@ header {
   white-space: normal;
 }
 
-/* === NAVIGATION BAR === */
+.title p {
+  display: block;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.logout-link {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #F28B82;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.logout-link:hover {
+  background-color: rgba(255,255,255,0.5);
+}
+
 .admin-nav {
   background-color: #ffe6e6;
   border-bottom: 2px solid #f28b82;
@@ -66,7 +88,6 @@ header {
   border-bottom: 3px solid #f28b82;
 }
 
-/* === SECTION TRANSITION === */
 .nav-content-container {
   position: relative;
   overflow: hidden;
@@ -100,123 +121,54 @@ header {
   gap: 20px;
 }
 
+.card {
+  border-radius: 10px;
+}
+
+.card-header {
+  font-weight: 600;
+}
+
+.btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0069d9;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
 .approve-btn, .reject-btn {
   margin-right: 5px;
   padding: 3px 8px;
   border-radius: 6px;
-}
-
-h2, h3 {
-  color: #E57373;
-}
-
-.user-info {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.user-info p {
-  margin: 5px 0;
-}
-
-.requests {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: flex-start;
-}
-
-.request-card {
-  background-color: #F28B82;
-  color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 250px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.card {
-  min-height: 250px;
-  width: 100%;
-  word-wrap: break-word;
-}
-
-.card-body {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.btn.btn-warning.btn-sm {
-  line-height: 1.4;
-  padding-top: 5px;
-}
-
-a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-.logout-link {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: #F28B82;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.logout-link:hover {
-  background-color: #E57373;
-}
-
-.ticket-form {
-  max-width: 800px;
-  margin: 0 auto 40px;
-  background: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.ticket-form h3 {
-  color: #E57373;
-  margin-top: 0;
-}
-
-.ticket-form input,
-.ticket-form textarea,
-.ticket-form select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  margin-top: 5px;
-}
-
-.ticket-form button {
-  margin-top: 10px;
-  background-color: #E57373;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 100%;
-  font-weight: bold;
-}
-
-.ticket-form button:hover {
-  background-color: #F28B82;
 }
 
 .delete-btn {
@@ -226,56 +178,64 @@ a:hover {
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
-  margin-top: 10px;
 }
 
 .delete-btn:hover {
   background-color: #e53935;
 }
 
-.row,
-.ticket-scroll-container .row {
-  margin-top: 20px;
+#existingAccountsBody .delete-btn {
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 0;
 }
 
-footer {
-  margin-top: auto;
+#existingAccountsBody td:last-child {
   text-align: center;
-  padding: 15px 0;
-  background-color: transparent;
-  position: relative;
-  bottom: 0;
-  width: 100%;
-  color: white;
+  vertical-align: middle;
+  padding: 8px;
 }
 
-/* MODAL OVERLAY */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #f8f9fa;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45); /* dim page behind modal */
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
 
-/* MODAL CONTENT */
 .modal-content {
-  background: #ffffff; /* solid white */
-  color: black; /* readable text */
+  background: #ffffff;
+  color: black;
   width: 300px;
   max-width: 90%;
   padding: 20px 25px;
   border-radius: 10px;
   text-align: center;
-  animation: fadeInUp 0.3s ease;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
   position: relative;
   overflow: hidden;
 }
 
-/* MODAL HEADER STYLES */
 .modal-header-approve,
 .modal-header-reject,
 .modal-header-success {
@@ -303,7 +263,6 @@ footer {
   border-bottom-color: #28a745;
 }
 
-/* MODAL BUTTONS */
 .modal-buttons {
   display: flex;
   justify-content: center;
@@ -311,41 +270,15 @@ footer {
   margin-top: 15px;
 }
 
-.btn {
-  padding: 7px 14px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.2s;
-  font-size: 14px;
-}
-
-.btn-primary {
-  background-color: #007bff;
+footer {
+  margin-top: auto;
+  text-align: center;
+  padding: 15px 0;
+  background-color: transparent;
+  width: 100%;
   color: white;
 }
 
-.btn-primary:hover { background-color: #0069d9; }
-
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-danger:hover { background-color: #c82333; }
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover { background-color: #5a6268; }
-
-.modal-approve { border: 2px solid #007bff; }
-.modal-reject  { border: 2px solid #dc3545; }
-.modal-success { border: 2px solid #28a745; }
-
-/* ANIMATION */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }

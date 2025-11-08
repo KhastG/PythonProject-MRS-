@@ -70,16 +70,37 @@ document.addEventListener("DOMContentLoaded", () => {
                         })()
                         : "N/A";
 
-                    ticketBody.innerHTML += `
+                   ticketBody.innerHTML += `
                         <tr>
                             <td>${t.id}</td>
                             <td>${t.submitted_name}</td>
                             <td>${department}</td>
-                            <td>${t.description}</td>
+                            <td>
+                                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal${t.id}">View</button>
+                            </td>
                             <td>${dateSubmitted}</td>
                             <td>${t.status}</td>
                         </tr>
                     `;
+
+                    // Append modal to body
+                    document.body.insertAdjacentHTML('beforeend', `
+                        <div class="modal fade" id="viewModal${t.id}" tabindex="-1"
+                             aria-labelledby="viewModalLabel${t.id}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-dark text-white">
+                                        <h5 class="modal-title" id="viewModalLabel${t.id}">${t.title}</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Description:</strong></p>
+                                        <p>${t.description}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
                 });
             })
             .catch(() => {
