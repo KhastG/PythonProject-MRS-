@@ -281,6 +281,48 @@ def admin_dashboard():
     return render_template('admin_dashboard.html', user=current_user, users=users, tickets=tickets)
 
 
+@app.route('/existing_accounts')
+def existing_accounts():
+    # Fetch only approved users excluding admin
+    users = User.query.filter(
+        User.is_approved == True,
+        User.role != 'Admin'
+    ).all()
+
+    user_list = [{
+        'id': u.id,
+        'first_name': u.first_name,
+        'last_name': u.last_name,
+        'username': u.username,
+        'email': u.email,
+        'role': u.role or "Employee",
+        'department': u.department or "N/A"
+    } for u in users]
+
+    return jsonify(user_list)
+
+@app.route('/delete_account/<int:user_id>', methods=['DELETE'])
+def delete_account(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'})
+
+    try:
+        db.session.delete(user)
+        db.session.commit()
+
+        # Fix auto-increment
+        if User.query.count() == 0:
+            db.session.execute(text("ALTER TABLE user AUTO_INCREMENT = 1"))
+        else:
+            max_id = db.session.query(db.func.max(User.id)).scalar() or 0
+            db.session.execute(text(f"ALTER TABLE user AUTO_INCREMENT = {max_id + 1}"))
+        db.session.commit()
+
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/submit_ticket', methods=['POST'])
 @login_required

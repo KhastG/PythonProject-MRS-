@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.classList.add("fade-out");
         setTimeout(() => {
           window.location.href = link.href;
-        }, 500); // matches the CSS transition duration
+        }, 500); // to match sa CSS DURATION (login.css)
       });
     }
   });

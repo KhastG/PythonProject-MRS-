@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   if (form) {
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])[A-Za-z\d]{8,}$/;
-    // at least 1 uppercase, 1 lowercase, only letters/numbers, 8+ chars
+    // REGEX just like in JAVA: at least 1 uppercase, 1 lowercase, only letters/numbers, 8+ chars
 
     form.addEventListener("submit", function(e) {
       e.preventDefault();
