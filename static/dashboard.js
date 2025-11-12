@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusFilter = document.getElementById('statusFilter');
     const deptFilter = document.getElementById('deptFilter');
     const ticketContainer = document.getElementById('ticketContainer');
-     const tickets = document.querySelectorAll("#ticketContainer .card");
+    const tickets = document.querySelectorAll("#ticketContainer .card");
 
     if (deptFilter && !deptFilter.value) deptFilter.value = 'All';
     if (statusFilter && !statusFilter.value) statusFilter.value = 'All';
@@ -49,16 +49,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 else if (t.status === 'Done') borderClass = 'border-secondary';
 
                 col.innerHTML = `
-                    <div class="card mb-4 shadow-sm ${borderClass}">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold">${escapeHtml(t.title)}</h5>
-                            <p class="mb-1"><strong>Status:</strong> ${escapeHtml(t.status)}</p>
-                            <p class="mb-1"><strong>Department:</strong> ${escapeHtml((t.category || '').toUpperCase())}</p>
-                            <p class="mb-1"><strong>Submitted By:</strong> ${escapeHtml(t.submitted_name || '')}</p>
-                            <p class="text-muted"><small>Submitted: ${escapeHtml(t.date_submitted || '')}</small></p>
-                            ${t.status === 'Approved' ? `<button class="btn btn-sm btn-success approve-btn" data-ticket-id="${t.id}">Done</button>` : ''}
-                        </div>
+                  <div class="card mb-4 shadow-sm ${borderClass}">
+                    <div class="card-body">
+                      <h5 class="card-title fw-bold">${escapeHtml(t.title)}</h5>
+                      <p class="mb-1"><strong>Status:</strong> ${escapeHtml(t.status)}</p>
+                      <p class="mb-1"><strong>Department:</strong> ${escapeHtml((t.category || '').toUpperCase())}</p>
+                      <p class="mb-1"><strong>Submitted By:</strong> ${escapeHtml(t.submitted_name || '')}</p>
+                      <p class="text-muted"><small>Submitted: ${escapeHtml(t.date_submitted || '')}</small></p>
+
+                      ${t.photo ? `<button type="button" class="btn btn-info btn-sm view-image-btn" data-photo="${t.photo}">View Image</button>` : ''}
+
+                      ${t.status === 'Approved' ? `<button class="btn btn-sm btn-success approve-btn" data-ticket-id="${t.id}">Done</button>` : ''}
                     </div>
+                  </div>
                 `;
                 fragment.appendChild(col);
             });
@@ -73,6 +76,21 @@ document.addEventListener("DOMContentLoaded", () => {
             ticketContainer.innerHTML = '<p class="text-danger">Error fetching tickets (network).</p>';
         }
     }
+
+      document.addEventListener("click", function(e) {
+        const btn = e.target.closest('.view-image-btn');
+        if (!btn) return;
+
+        const photo = btn.dataset.photo;
+        if (!photo) return console.error("No photo found on button");
+
+        const preview = document.getElementById('previewImage');
+        preview.src = `/static/uploads/${photo}`;
+
+        const imgModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+        imgModal.show();
+    });
+
 
     //PROTECTION FOR INJECTIONS
     function escapeHtml(str) {

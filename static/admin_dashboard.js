@@ -3,15 +3,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusFilter = document.getElementById("statusFilter");
     const ticketBody = document.getElementById("ticketBody");
     const sortOrder = document.getElementById("sortOrder");
+    //NAVIGATION BAR
     const navItems = document.querySelectorAll(".nav-item");
     const sections = document.querySelectorAll(".nav-section");
+    //BUTTON MODALS FOR THE ADMIN PENDING ACCOUNT APPROVALS
     const approveModal = document.getElementById("approveModal");
     const rejectModal = document.getElementById("rejectModal");
     const successModal = document.getElementById("successModal");
     const successMessage = document.getElementById("successMessage");
+    //BUTTON MODAL FOR TICKET TRANSFER (ONLY APPROVED AND PENDING ONES, EXCLUDING THE DONE)
+    const transferModal = new bootstrap.Modal(document.getElementById("transferModal"));
+    const transferFrom = document.getElementById("transferFrom");
+    const transferTo = document.getElementById("transferTo");
+    const confirmTransfer = document.getElementById("confirmTransfer");
 
     let currentUserId = null;
     let currentAction = null;
+    let selectedTicketId = null;
 
     // NAVIGATION SWITCH HANDLER
     navItems.forEach(item => {
@@ -26,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Auto-refresh content per tab
             if (targetId === "approvement") fetchPendingAccounts();
             if (targetId === "tickets") fetchFilteredTickets();
-            if (targetId === "existingAccounts") fetchExistingAccounts();
+            if (targetId === "accounts") fetchExistingAccounts();
         });
     });
 
@@ -107,6 +115,51 @@ document.addEventListener("DOMContentLoaded", () => {
                 ticketBody.innerHTML = `<td colspan="6" class="text-center text-danger py-3">Failed to load tickets.</td>`;
             });
     }
+
+    // Open modal when "Transfer" button is clicked
+    document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("transfer-btn")) {
+            selectedTicketId = e.target.getAttribute("data-ticket-id");
+            const currentDept = e.target.getAttribute("data-current-dept");
+
+            // Set "Transferred From" field
+            transferFrom.value = currentDept;
+
+            // Filter dropdown to exclude current department
+            Array.from(transferTo.options).forEach(option => {
+                if (option.value === currentDept) {
+                    option.style.display = "none";
+                } else {
+                    option.style.display = "block";
+                }
+            });
+
+            transferTo.value = ""; // reset selection
+            transferModal.show();
+        }
+    });
+
+    // CONFIRMATION TRANSFER
+    confirmTransfer.addEventListener("click", () => {
+        const newDept = transferTo.value;
+
+        if (!newDept) {
+            alert("Please select a department to transfer to.");
+            return;
+        }
+
+        console.log(`Ticket ID ${selectedTicketId} transferred from ${transferFrom.value} to ${newDept}`);
+
+        // Optional visual update (simulate real-time UI change)
+        const row = document.querySelector(`[data-ticket-id="${selectedTicketId}"]`)?.closest("tr");
+        if (row) {
+            const deptCell = row.children[3]; //4th column = Department
+            deptCell.textContent = newDept;
+        }
+
+        transferModal.hide();
+        alert(`Ticket successfully transferred to ${newDept}!`);
+    });
 
     // FETCH PENDING ACCOUNTS (APPROVAL TAB)
     function fetchPendingAccounts() {
@@ -265,6 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
             successModal.style.display = "flex";
             setTimeout(() => {
                 fetchPendingAccounts();
+                fetchExistingAccounts();
             }, 800);
         })
         .catch((err) => console.error("Error updating account:", err));

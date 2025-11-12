@@ -121,6 +121,7 @@
                             <td>{{ ticket.submitted_name }}</td>
                             <td>{{ ticket.category }}</td>
                             <td>
+                                <!-- VIEW MODAL-->
                                 <button class="btn btn-info btn-sm" data-bs-toggle="modal"
                                         data-bs-target="#viewModal{{ ticket.id }}">
                                     View
@@ -128,13 +129,23 @@
                             </td>
                             <td>{{ ticket.date_submitted.strftime('%B %d, %Y') if ticket.date_submitted else 'N/A' }}
                             </td>
-                            <td>{{ ticket.status }}</td>
+                            <!-- TRANSFER TICKET MODAL (ONLY PENDING AND APPROVED)-->
+                            <td>
+                                {{ ticket.status }}
+                                {% if ticket.status != 'Done' %}
+                                <button class="btn btn-warning btn-sm transfer-btn"
+                                        data-ticket-id="{{ ticket.id }}"
+                                        data-current-dept="{{ ticket.category }}">
+                                    Transfer
+                                </button>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                         </tbody>
                     </table>
 
-                    <!-- Generate all modals outside of the table -->
+                    <!-- VIEW MODAL CONTENT -->
                     {% for ticket in tickets %}
                     <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
                          aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
@@ -169,7 +180,37 @@
                     </div>
                     {% endfor %}
 
-                    </table>
+                    <!-- TRANSFER TICKET MODAL -->
+                    <div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header bg-dark text-white">
+                            <h5 class="modal-title" id="transferModalLabel">Transfer Ticket</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="mb-3">
+                              <label class="form-label fw-bold">TRANSFERRED FROM:</label>
+                              <input type="text" id="transferFrom" class="form-control" disabled>
+                            </div>
+                            <div class="mb-3">
+                              <label class="form-label fw-bold">TRANSFERRED TO:</label>
+                              <select id="transferTo" class="form-select">
+                                <option value="" disabled selected>Select Department</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Plumbing">Plumbing</option>
+                                <option value="Carpentry">Carpentry</option>
+                                <option value="IT">IT</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" id="confirmTransfer" class="btn btn-warning">Confirm</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -258,6 +299,7 @@
         <p id="successMessage">The account status has been updated successfully.</p>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='admin_dashboard.js') }}"></script>
 </body>

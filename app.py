@@ -1,4 +1,5 @@
 import random
+import os
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 from flask_bcrypt import Bcrypt
@@ -11,22 +12,26 @@ from zoneinfo import ZoneInfo
 from config import Config
 from sqlalchemy import text
 from smtplib import SMTPRecipientsRefused
+from werkzeug.utils import secure_filename
 
 
-app = Flask(__name__)  # <-----------------| WAG NA TONG GAGALAWIN!!!
-app.config.from_object(Config)  #          | this line of code refers to the connection of the db and also the email and the app password from the config.py and .env file
-#                                          |
-db = SQLAlchemy(app)  #                    |
-bcrypt = Bcrypt(app)  #                    |
-mail = Mail(app)  #                        |
-login_manager = LoginManager(app)  #       |
-login_manager.login_view = 'login'  #      |
-migrate = Migrate(app, db)  # <------------|
+app = Flask(__name__)  # <--------------------------------------| WAG NA TONG GAGALAWIN!!!
+app.config.from_object(Config)#                                 |
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+#                                                               | this line of code refers to the connection of the db and also the email and the app password from the config.py and .env file
+#                                                               |
+db = SQLAlchemy(app)  #                                         |
+bcrypt = Bcrypt(app)  #                                         |
+mail = Mail(app)  #                                             |
+login_manager = LoginManager(app)  #                            |
+login_manager.login_view = 'login'  #                           |
+migrate = Migrate(app, db)  # <---------------------------------|
 
 # Database Models
-#users
+#pending users
 class PendingUser(db.Model):
-    __tablename__ = 'pending_user'
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
@@ -38,6 +43,7 @@ class PendingUser(db.Model):
     is_approved = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Manila")))
 
+#users
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
@@ -54,6 +60,7 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    photo = db.Column(db.String(255))
     category = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(50), default='Pending')
     submitted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -71,6 +78,7 @@ class DoneTicket(db.Model):
     ticket_id = db.Column(db.Integer, nullable=False)  # reference to original ticket
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    photo = db.Column(db.String(255))
     department = db.Column(db.String(100), nullable=False)
     employee_first_name = db.Column(db.String(100))
     employee_last_name = db.Column(db.String(100))
@@ -388,8 +396,8 @@ def admin_dashboard():
 def existing_accounts():
     # Fetch only approved users excluding admin
     users = User.query.filter(
-        User.is_approved == True,
-        User.role != 'Admin'
+        User.is_approved.is_(True),
+        db.func.lower(User.role) != 'admin'
     ).all()
 
     user_list = [{
@@ -398,8 +406,8 @@ def existing_accounts():
         'last_name': u.last_name,
         'username': u.username,
         'email': u.email,
-        'role': u.role.capitalize() or "Employee",
-        'department': u.department.capitalize() or "N/A"
+        'role': (u.role.capitalize() if u.role else "Employee"),
+        'department': (u.department.capitalize() if u.department else "N/A")
     } for u in users]
 
     return jsonify(user_list)
@@ -427,6 +435,9 @@ def delete_account(user_id):
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/submit_ticket', methods=['POST'])
 @login_required
 def submit_ticket():
@@ -439,19 +450,31 @@ def submit_ticket():
     category = request.form['category']
     submitted_name = f"{current_user.first_name} {current_user.last_name}"
 
+    #another layer of validation if the user tries to bypass the submission ticket with an empty input
+    if not title or not description or not category:
+        flash("Please fill in all required fields and select a department.", "danger")
+        return redirect(url_for('dashboard'))
+
+    photo = request.files.get('photo')
+    photo_filename = None
+    if photo and allowed_file(photo.filename):
+        filename = secure_filename(photo.filename)
+        photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        photo_filename = filename
+
     new_ticket = Ticket(
         title=title,
         description=description,
         category=category,
         submitted_by=current_user.id,
-        submitted_name=submitted_name
+        submitted_name=submitted_name,
+        photo=photo_filename  # store the filename
     )
 
     db.session.add(new_ticket)
     db.session.commit()
     flash("Ticket submitted successfully!", "success")
     return redirect(url_for('dashboard'))
-
 
 @app.route('/approve_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
@@ -506,6 +529,7 @@ def done_ticket(ticket_id):
         ticket_id=ticket.id,
         title=ticket.title,
         description=ticket.description,
+        photo=ticket.photo,
         department=ticket.category,
         employee_first_name=ticket.submitted_name.split(" ")[0] if ticket.submitted_name else "",
         employee_last_name=" ".join(ticket.submitted_name.split(" ")[1:]) if ticket.submitted_name else "",

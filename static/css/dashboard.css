@@ -19,12 +19,13 @@ html, body {
 
 /* Header styling */
 header {
-  background-color: #f28b82;
-  color: white;
+  background-color: #E57373;
   padding: 20px;
+  color: white;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  position: relative;
 }
 
 .title h1 {
@@ -39,7 +40,11 @@ header {
 }
 
 .logout-link {
-  background-color: rgba(255,255,255,0.3);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #F28B82;
   color: white;
   padding: 8px 16px;
   border-radius: 6px;
@@ -75,7 +80,7 @@ header {
 /* Cards */
 .card {
   min-height: 250px;
-  width: 100%;
+  width: 62%;
   word-wrap: break-word;
   border-radius: 10px;
 }
@@ -84,6 +89,24 @@ header {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.card-body .d-flex .btn-warning {
+    display: flex;            /* make the button a flex container */
+    align-items: center;      /* vertically center the text */
+    justify-content: center;  /* horizontally center the text */
+    text-align: center;       /* ensures multi-line text stays centered */
+    height: 40px;             /* optional: uniform height for all buttons */
+}
+
+.card-body .d-flex .btn {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    text-transform: none;
+    height: 40px;   /* same height for all */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .card-title {
@@ -116,6 +139,7 @@ header {
 .btn-danger {
   background-color: #dc3545;
   color: white;
+  height:40px;
 }
 
 .btn-danger:hover {
@@ -127,6 +151,18 @@ header {
   color: white;
 }
 
+#imagePreviewModal .modal-backdrop.show {
+    background-color: rgba(0,0,0,0.5); /* semi-transparent gray */
+}
+
+#imagePreviewModal .modal-content {
+    background-color: transparent !important; /* modal itself is transparent */
+}
+
+.modal-backdrop.show {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
 .btn-info:hover {
   background-color: #138496;
 }
@@ -134,6 +170,8 @@ header {
 .btn-warning {
   background-color: #ffc107;
   color: white;
+  align-items: center;
+  font-size:14px;
 }
 
 .btn-warning:hover {
