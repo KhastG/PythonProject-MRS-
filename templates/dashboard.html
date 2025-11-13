@@ -29,82 +29,95 @@
             <p>Your role: <strong>{{ user.role|upper }}</strong></p>
         </div>
         <hr>
+        <!--TICKET SECTION -->
         <h3 class="mb-3">Your Tickets:</h3>
         {% if tickets %}
-       <div class="row mt-4" style="margin-top: 20px;">
-            {% for ticket in tickets %}
-            <div class="col-md-6 col-lg-6">
-                <div class="card mb-4 shadow-sm border-danger h-100">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title fw-bold">{{ ticket.title }}</h5>
-                        <p class="mb-1"><strong>Status:</strong> {{ ticket.status }}</p>
-                        <p class="mb-1"><strong>Department:</strong> {{ ticket.category}}</p>
-                        <p class="mb-1"><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
-                        <p class="text-muted mt-auto"><small>Date Submitted: {{ ticket.date_submitted.strftime('%B %d,
-                            %Y at %I:%M %p') }}</small></p>
-                        <div class="d-flex justify-content-start gap-1 mt-4">
-                            <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=ticket.id) }}">
-                                <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-                            </form>
-                            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.id }}">View Ticket
-                            </button>
-                            {% if ticket.photo %}
-                                <a href="{{ url_for('static', filename='uploads/' ~ ticket.photo) }}" target="_blank" class="btn btn-info">
-                                    View Image
+        <div class="container-fluid">
+            <div class="row row-cols-1 row-cols-md-2 g-4 mt-3">
+                <!-- CARDS SECTION -->
+                {% for ticket in tickets %}
+                <div class="col d-flex">
+                    <div class="card flex-fill shadow-sm border-danger p-3">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">{{ ticket.title }}</h5>
+                            <p class="mb-1"><strong>Status:</strong> {{ ticket.status }}</p>
+                            <p class="mb-1"><strong>Department:</strong> {{ ticket.category }}</p>
+                            <p class="mb-1"><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
+                            <p class="text-muted mt-auto">
+                                <small>Date Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p')
+                                    }}</small>
+                            </p>
+
+                            <div class="d-flex justify-content-start gap-1 mt-4">
+                                <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=ticket.id) }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                                </form>
+                                <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#viewModal{{ ticket.id }}">
+                                    View Ticket
+                                </button>
+                                {% if ticket.photo %}
+                                <a href="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}" target="_blank"
+                                   class="btn btn-info btn-sm">
+                                   View Image
                                 </a>
-                            {% endif %}
-                            <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}"
-                               class="btn btn-warning btn-sm">Edit</a>
+                                {% endif %}
+                                <a href="{{ url_for('edit_ticket', ticket_id=ticket.id) }}"
+                                   class="btn btn-warning btn-sm">Edit</a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- VIEW MODAL (per ticket) -->
-            <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
-                 aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-dark text-white">
-                            <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title }}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p><strong>Description:</strong></p>
-                            <p>{{ ticket.description }}</p>
-                            <hr>
-                            <p><strong>Category:</strong> {{ ticket.category }}</p>
-                            <p><strong>Status:</strong> {{ ticket.status }}</p>
-                            <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M
-                                %p') }}</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <!-- VIEW MODAL -->
+                <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
+                     aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-dark text-white">
+                                <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title }}</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Description:</strong></p>
+                                <p>{{ ticket.description }}</p>
+                                <hr>
+                                <p><strong>Category:</strong> {{ ticket.category }}</p>
+                                <p><strong>Status:</strong> {{ ticket.status }}</p>
+                                <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at
+                                    %I:%M %p') }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-
-            {% endfor %}
         </div>
         {% else %}
         <p>No tickets submitted yet.</p>
         {% endif %}
+
     </div>
 
     <!-- IMAGE PREVIEW MODAL -->
     <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 bg-transparent">
-                <div class="modal-body p-0" style="cursor: pointer;" data-bs-dismiss="modal">
-                    <img id="previewImage" src="" alt="Ticket Image"
-                         class="img-fluid rounded shadow"
-                         style="max-width: 70%; max-height: 70vh; display: block; margin: auto;">
-                </div>
-            </div>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Ticket Image</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img id="previewImage" src="" class="img-fluid" alt="Ticket Image">
+          </div>
         </div>
+      </div>
     </div>
+
 
     <!-- Edit Ticket Modal -->
     <div class="modal fade" id="editTicketModal" tabindex="-1" aria-labelledby="editTicketLabel" aria-hidden="true">
@@ -179,8 +192,8 @@
 </div>
 
 
-<footer>
-    <p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
+<footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
+  <p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
 </footer>
 
 <script src="{{ url_for('static', filename='dashboard.js') }}"></script>

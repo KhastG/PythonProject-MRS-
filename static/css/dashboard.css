@@ -80,10 +80,27 @@ header {
 /* Cards */
 .card {
   min-height: 250px;
-  width: 62%;
+  width: 100%;
   word-wrap: break-word;
   border-radius: 10px;
+  transition: transform 0.2s ease-in-out;
 }
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+@media (max-width: 768px) {
+  .row-cols-md-2 > * {
+    flex: 0 0 100%;
+    max-width: 100%;
+ }
+
+.row {
+  gap: 10px; /* adds spacing between cards horizontally */
+  justify-content: flex-start; /* prevents weird centering */
+}
+
 
 .card-body {
   display: flex;
@@ -96,12 +113,12 @@ header {
     align-items: center;      /* vertically center the text */
     justify-content: center;  /* horizontally center the text */
     text-align: center;       /* ensures multi-line text stays centered */
-    height: 40px;             /* optional: uniform height for all buttons */
+    height: 50px;             /* optional: uniform height for all buttons */
 }
 
 .card-body .d-flex .btn {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     text-transform: none;
     height: 40px;   /* same height for all */
     display: flex;
@@ -187,12 +204,3 @@ header {
   margin: 10px 0;
 }
 
-/* Footer */
-footer {
-  margin-top: auto;
-  text-align: center;
-  padding: 15px 0;
-  background-color: transparent;
-  width: 100%;
-  color: white;
-}

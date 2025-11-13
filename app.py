@@ -1,7 +1,8 @@
 import random
 import os
+import io
 
-from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
+from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify, send_file, abort, Response
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from flask_mail import Mail, Message
@@ -13,6 +14,7 @@ from config import Config
 from sqlalchemy import text
 from smtplib import SMTPRecipientsRefused
 from werkzeug.utils import secure_filename
+from PIL import Image
 
 
 app = Flask(__name__)  # <--------------------------------------| WAG NA TONG GAGALAWIN!!!
@@ -61,6 +63,7 @@ class Ticket(db.Model):
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
     photo = db.Column(db.String(255))
+    photo_data = db.Column(db.LargeBinary)
     category = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(50), default='Pending')
     submitted_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -79,6 +82,7 @@ class DoneTicket(db.Model):
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
     photo = db.Column(db.String(255))
+    photo_data = db.Column(db.LargeBinary)
     department = db.Column(db.String(100), nullable=False)
     employee_first_name = db.Column(db.String(100))
     employee_last_name = db.Column(db.String(100))
@@ -457,10 +461,17 @@ def submit_ticket():
 
     photo = request.files.get('photo')
     photo_filename = None
+    photo_data = None
+
     if photo and allowed_file(photo.filename):
         filename = secure_filename(photo.filename)
-        photo.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        photo.save(file_path)
         photo_filename = filename
+
+        # Read the actual binary data to store in DB
+        with open(file_path, 'rb') as f:
+            photo_data = f.read()
 
     new_ticket = Ticket(
         title=title,
@@ -468,7 +479,8 @@ def submit_ticket():
         category=category,
         submitted_by=current_user.id,
         submitted_name=submitted_name,
-        photo=photo_filename  # store the filename
+        photo=photo_filename,  # store the filename
+        photo_data = photo_data
     )
 
     db.session.add(new_ticket)
@@ -530,6 +542,7 @@ def done_ticket(ticket_id):
         title=ticket.title,
         description=ticket.description,
         photo=ticket.photo,
+        photo_data=ticket.photo_data,
         department=ticket.category,
         employee_first_name=ticket.submitted_name.split(" ")[0] if ticket.submitted_name else "",
         employee_last_name=" ".join(ticket.submitted_name.split(" ")[1:]) if ticket.submitted_name else "",
@@ -598,6 +611,15 @@ def delete_ticket(ticket_id):
 
     return redirect(url_for('dashboard'))
 
+@app.route('/image/<int:ticket_id>')
+def get_ticket_image(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    if not ticket.photo_data:
+        return "No image found", 404
+
+    return Response(ticket.photo_data, mimetype='image/jpeg', headers={
+        'Content-Length': str(len(ticket.photo_data))
+    })
 
 @app.route('/search_users', methods=['GET'])
 def search_users():

@@ -56,9 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <p class="mb-1"><strong>Department:</strong> ${escapeHtml((t.category || '').toUpperCase())}</p>
                       <p class="mb-1"><strong>Submitted By:</strong> ${escapeHtml(t.submitted_name || '')}</p>
                       <p class="text-muted"><small>Submitted: ${escapeHtml(t.date_submitted || '')}</small></p>
-
-                      ${t.photo ? `<button type="button" class="btn btn-info btn-sm view-image-btn" data-photo="${t.photo}">View Image</button>` : ''}
-
+                      ${t.photo ? `<button type="button" class="btn btn-info btn-sm view-image-btn" data-ticket-id="${t.id}">View Image</button>` : ''}
                       ${t.status === 'Approved' ? `<button class="btn btn-sm btn-success approve-btn" data-ticket-id="${t.id}">Done</button>` : ''}
                     </div>
                   </div>
@@ -77,19 +75,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-      document.addEventListener("click", function(e) {
+     document.addEventListener("click", function(e) {
         const btn = e.target.closest('.view-image-btn');
         if (!btn) return;
 
-        const photo = btn.dataset.photo;
-        if (!photo) return console.error("No photo found on button");
+        const ticketId = btn.dataset.ticketId;
+        if (!ticketId) return console.error("No ticket ID found");
 
         const preview = document.getElementById('previewImage');
-        preview.src = `/static/uploads/${photo}`;
+        preview.src = `/image/${ticketId}`;
 
         const imgModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
         imgModal.show();
     });
+
 
 
     //PROTECTION FOR INJECTIONS
