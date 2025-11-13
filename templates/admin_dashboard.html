@@ -98,41 +98,44 @@
             </div>
 
             <!-- TICKETS TABLE -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-danger text-white fw-semibold">
-                    All Tickets
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0" id="ticketTable">
-                        <thead class="table-light">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white fw-semibold">
+                All Tickets
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0" id="ticketTable">
+                    <thead class="table-light">
                         <tr>
                             <th>ID</th>
                             <th>Employee</th>
                             <th>Department</th>
                             <th>Description</th>
+                            <th>Image</th>
                             <th>Date Submitted</th>
                             <th>Status</th>
+                            <th>Transfer(Pending Only)</th>
                         </tr>
-                        </thead>
-                        <tbody id="ticketBody">
+                    </thead>
+                    <tbody id="ticketBody">
                         {% for ticket in tickets %}
                         <tr>
                             <td>{{ ticket.id }}</td>
                             <td>{{ ticket.submitted_name }}</td>
                             <td>{{ ticket.category }}</td>
                             <td>
-                                <!-- VIEW MODAL-->
-                                <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                        data-bs-target="#viewModal{{ ticket.id }}">
-                                    View
-                                </button>
+                                <button class="btn btn-info btn-sm view-ticket-btn" data-id="{{ ticket.id }}" data-description="{{ ticket.description}}" data-category="{{ ticket.category}}"  >View</button>
                             </td>
-                            <td>{{ ticket.date_submitted.strftime('%B %d, %Y') if ticket.date_submitted else 'N/A' }}
-                            </td>
-                            <!-- TRANSFER TICKET MODAL (ONLY PENDING AND APPROVED)-->
                             <td>
-                                {{ ticket.status }}
-                                {% if ticket.status != 'Done' %}
+                                {% if ticket.photo_data %}
+                                    <a href="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}" target="_blank" class="btn btn-info btn-sm">
+                                        View Image
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td>{{ ticket.date_submitted.strftime('%B %d, %Y') if ticket.date_submitted else 'N/A' }}</td>
+                            <td>{{ ticket.status }}</td>
+                            <td>
+                                {% if ticket.status in ['Pending'] %}
                                 <button class="btn btn-warning btn-sm transfer-btn"
                                         data-ticket-id="{{ ticket.id }}"
                                         data-current-dept="{{ ticket.category }}">
@@ -142,74 +145,81 @@
                             </td>
                         </tr>
                         {% endfor %}
-                        </tbody>
-                    </table>
+                    </tbody>
+                </table>
 
-                    <!-- VIEW MODAL CONTENT -->
-                    {% for ticket in tickets %}
-                    <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
-                         aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
+                    <!-- TICKET VIEW MODAL -->
+                    <div class="modal fade" id="ticketViewModal" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header bg-dark text-white">
-                                    <h5 class="card-title fw-bold">{{ ticket.title }}</h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
+                                    <h5 class="modal-title">Ticket Details</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <p><strong>Description:</strong></p>
-                                    <p>{{ ticket.description }}</p>
-                                    <hr>
-                                    <p><strong>Department:</strong> {{ ticket.category }}</p>
-                                    <p><strong>Status:</strong> {{ ticket.status }}</p>
-                                    <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y')
-                                        if ticket.date_submitted else 'N/A' }}</p>
-                                    {% if ticket.status != 'Pending' %}
-                                    <hr>
-                                    <p><strong>Approved By:</strong> {{ ticket.approved_by or 'N/A' }}</p>
-                                    <p><strong>Date Approved:</strong> {{ ticket.date_approved.strftime('%B %d, %Y') if
-                                        ticket.date_approved else 'N/A' }}</p>
-                                    {% endif %}
+                                    <p><strong>Description:</strong> <span id="ticketDescription"></span></p>
+                                    <p><strong>Department:</strong> <span id="ticketDept"></span></p>
+                                    <p><strong>Status:</strong> <span id="ticketStatus"></span></p>
+                                    <p><strong>Date:</strong> <span id="ticketDate"></span></p>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
-                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
+
+                    <!-- IMAGE PREVIEW MODAL -->
+                    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header bg-dark text-white">
+                                    <h5 class="modal-title">Ticket Image</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img id="previewImage" src="" alt="Ticket Image" class="img-fluid rounded">
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- TRANSFER TICKET MODAL -->
-                    <div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header bg-dark text-white">
-                            <h5 class="modal-title" id="transferModalLabel">Transfer Ticket</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="mb-3">
-                              <label class="form-label fw-bold">TRANSFERRED FROM:</label>
-                              <input type="text" id="transferFrom" class="form-control" disabled>
+                    <div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel"
+                         aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-dark text-white">
+                                    <h5 class="modal-title" id="transferModalLabel">Transfer Ticket</h5>
+                                    <button type="button" class="btn-close btn-close-white"
+                                            data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">TRANSFERRED FROM:</label>
+                                        <input type="text" id="transferFrom" class="form-control" disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">TRANSFERRED TO:</label>
+                                        <select id="transferTo" class="form-select">
+                                            <option value="" disabled selected>Select Department</option>
+                                            <option value="Electrical">Electrical</option>
+                                            <option value="Plumbing">Plumbing</option>
+                                            <option value="Carpentry">Carpentry</option>
+                                            <option value="IT">IT</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" id="confirmTransfer" class="btn btn-warning">Confirm</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
+                                    </button>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                              <label class="form-label fw-bold">TRANSFERRED TO:</label>
-                              <select id="transferTo" class="form-select">
-                                <option value="" disabled selected>Select Department</option>
-                                <option value="Electrical">Electrical</option>
-                                <option value="Plumbing">Plumbing</option>
-                                <option value="Carpentry">Carpentry</option>
-                                <option value="IT">IT</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" id="confirmTransfer" class="btn btn-warning">Confirm</button>
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                          </div>
                         </div>
-                      </div>
                     </div>
                 </div>
             </div>
@@ -264,8 +274,8 @@
     </section>
 </div>
 
-<footer>
-    <p class="mb-0 text-center">&copy; 2025 | Designed by Poging Noy TEOPE</p>
+<footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
+    <p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
 </footer>
 
 <!-- APPROVE MODAL -->
@@ -300,7 +310,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='admin_dashboard.js') }}"></script>
 </body>
 </html>

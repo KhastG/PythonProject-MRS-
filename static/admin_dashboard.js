@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else if (order === "desc") data.sort((a, b) => b.id - a.id);
 
                 if (data.length === 0) {
-                    ticketBody.innerHTML = `<td colspan="6" class="text-center text-muted py-3">No tickets found.</td>`;
+                    ticketBody.innerHTML = `<td colspan="7" class="text-center text-muted py-3">No tickets found.</td>`;
                     return;
                 }
 
@@ -78,16 +78,26 @@ document.addEventListener("DOMContentLoaded", () => {
                         })()
                         : "N/A";
 
-                   ticketBody.innerHTML += `
+                    ticketBody.innerHTML += `
                         <tr>
                             <td>${t.id}</td>
                             <td>${t.submitted_name}</td>
                             <td>${department}</td>
                             <td>
-                                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal${t.id}">View</button>
+                                <button class="btn btn-info btn-sm view-ticket-btn" data-id="${t.id}" data-description="${t.description}" data-category="${t.category}" data-bs-toggle="modal" data-bs-target="#viewModal${t.id}">
+                                View
+                                </button>
                             </td>
+                            <td>${t.photo_data ? `<a href="/image/${t.id}" target="_blank" class="btn btn-info btn-sm">View Image</a>` : ''}</td>
                             <td>${dateSubmitted}</td>
                             <td>${t.status}</td>
+                            <td>${(t.status === 'Pending') ? `
+                                <button class="btn btn-warning btn-sm transfer-btn"
+                                        data-ticket-id="${t.id}"
+                                        data-current-dept="${t.category}">
+                                    Transfer
+                                </button>` : ''}
+                            </td>
                         </tr>
                     `;
 
@@ -104,6 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <div class="modal-body">
                                         <p><strong>Description:</strong></p>
                                         <p>${t.description}</p>
+                                        <p><strong>Category:</strong></p>
+                                        <p>${t.category}</p>
                                     </div>
                                 </div>
                             </div>
@@ -112,9 +124,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             })
             .catch(() => {
-                ticketBody.innerHTML = `<td colspan="6" class="text-center text-danger py-3">Failed to load tickets.</td>`;
+                ticketBody.innerHTML = `<td colspan="7" class="text-center text-danger py-3">Failed to load tickets.</td>`;
             });
     }
+
+    document.addEventListener("click", function(e) {
+        const btn = e.target.closest('.view-image-btn');
+        if (!btn) return;
+
+        const ticketId = btn.dataset.ticketId;
+        if (!ticketId) return console.error("No ticket ID found for image preview.");
+
+        const preview = document.getElementById('previewImage');
+        preview.src = `/image/${ticketId}`; // route returns the image from DB
+
+        const imgModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+        imgModal.show();
+    });
 
     // Open modal when "Transfer" button is clicked
     document.addEventListener("click", (e) => {

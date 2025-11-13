@@ -200,6 +200,12 @@ header {
   padding: 8px;
 }
 
+#previewImage {
+    max-height: 70vh;
+    object-fit: contain;
+}
+
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -271,14 +277,6 @@ th {
   margin-top: 15px;
 }
 
-footer {
-  margin-top: auto;
-  text-align: center;
-  padding: 15px 0;
-  background-color: transparent;
-  width: 100%;
-  color: white;
-}
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }

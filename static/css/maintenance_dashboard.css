@@ -168,14 +168,6 @@ form.d-flex button {
   margin: 10px 0;
 }
 
-footer {
-  margin-top: auto;
-  text-align: center;
-  padding: 15px 0;
-  background-color: transparent;
-  width: 100%;
-  color: white;
-}
 
 #noTicketsMessage {
   display: none;
