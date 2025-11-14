@@ -6,6 +6,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'fallback_secret_key')
+    SECRET_ADMIN_KEY = os.getenv('SECRET_ADMIN_KEY')
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL',
         'mysql+pymysql://root:gCEk4bteN)QgwfbA/db_maintenance'

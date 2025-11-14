@@ -252,18 +252,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
    document.addEventListener("click", (e) => {
-      if (e.target.classList.contains("approve-btn")) {
-        currentUserId = e.target.getAttribute("data-id");
-        currentAction = "approve";
-        const approveModalInstance = new bootstrap.Modal(document.getElementById("approveModal"));
-        approveModalInstance.show();
-      }
-      else if (e.target.classList.contains("reject-btn")) {
-        currentUserId = e.target.getAttribute("data-id");
-        currentAction = "reject";
-        const rejectModalInstance = new bootstrap.Modal(document.getElementById("rejectModal"));
-        rejectModalInstance.show();
-      }
+        if (e.target.classList.contains("approve-btn")) {
+            currentUserId = e.target.getAttribute("data-id");
+            currentAction = "approve";
+            const approveModalInstance = new bootstrap.Modal(document.getElementById("approveModal"));
+            approveModalInstance.show();
+        }
+        else if (e.target.classList.contains("reject-btn")) {
+            currentUserId = e.target.getAttribute("data-id");
+            currentAction = "reject";
+            const rejectModalInstance = new bootstrap.Modal(document.getElementById("rejectModal"));
+            rejectModalInstance.show();
+        }
     });
 
     // For showing success modal:

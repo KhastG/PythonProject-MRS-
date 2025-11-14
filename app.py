@@ -1,6 +1,6 @@
 import random
 import os
-import io
+import threading
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify, send_file, abort, Response
 from flask_bcrypt import Bcrypt
@@ -14,11 +14,12 @@ from config import Config
 from sqlalchemy import text
 from smtplib import SMTPRecipientsRefused
 from werkzeug.utils import secure_filename
-from PIL import Image
 
 
 app = Flask(__name__)  # <--------------------------------------| WAG NA TONG GAGALAWIN!!!
 app.config.from_object(Config)#                                 |
+#access secret key
+SECRET_ADMIN_KEY = Config.SECRET_ADMIN_KEY
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -91,7 +92,6 @@ class DoneTicket(db.Model):
     date_approved = db.Column(db.DateTime, nullable=False)
     date_done = db.Column(db.DateTime, nullable=False)
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -143,7 +143,6 @@ def signup():
         return redirect(url_for('verify_otp'))
 
     return render_template('signup.html')
-
 
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
@@ -201,7 +200,12 @@ def verify_otp():
 
                     try:
                         admin_email = app.config.get('ADMIN_EMAIL') or 'saixii.ixix2@gmail.com'
-                        msg = Message(subject=subject, recipients=[admin_email], html=body_html)
+                        msg = Message(
+                            subject=subject,
+                            recipients=[admin_email],
+                            html=body_html,
+                            sender=(os.getenv('ADMIN_MAIL_SENDER_NAME', 'Maintenance System'), admin_email)
+                        )
                         mail.send(msg)
                     finally:
                         # Restore original OTP email credentials
@@ -234,6 +238,111 @@ def verify_otp():
 
     return render_template('verify_otp.html')
 
+def send_admin_email(subject, html_body):
+    admin_email = app.config.get('ADMIN_EMAIL')
+    msg = Message(subject=subject, recipients=[admin_email], html=html_body,
+                  sender=(os.getenv('ADMIN_MAIL_SENDER_NAME', 'Maintenance System'), admin_email))
+    mail.send(msg)
+
+# Async email sending helper
+def send_email_async(msg):
+    with app.app_context():
+        mail.send(msg)
+
+@app.route('/secret_admin', methods=['GET'])
+@login_required
+def secret_admin_page():
+    if current_user.role != 'admin':
+        flash("You are not authorized to access this page.", "danger")
+        return redirect(url_for('admin_dashboard'))
+    return render_template('secret_admin.html')
+
+
+# Send OTP for secret admin creation
+@app.route('/send_admin_otp', methods=['POST'])
+def send_admin_otp():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'})
+
+    secret_key = data.get('secret_key')
+    if secret_key != Config.SECRET_ADMIN_KEY:
+        return jsonify({'success': False, 'message': 'Invalid secret key'})
+
+    # store the user info temporarily in session
+    session['admin_temp_first_name'] = data.get('first_name')
+    session['admin_temp_last_name'] = data.get('last_name')
+    session['admin_temp_username'] = data.get('username')
+    session['admin_temp_email'] = data.get('email')
+    session['admin_temp_password'] = data.get('password')
+
+    # Generate OTP
+    otp = random.randint(100000, 999999)
+    session['admin_otp'] = otp
+
+    try:
+        msg = Message(
+            "Your Admin OTP Code",
+            recipients=[session['admin_temp_email']],
+            body=f"Your OTP is: {otp}"
+        )
+        #mail.send(msg)
+        threading.Thread(target=send_email_async, args=(msg,), daemon=True).start()
+
+        return jsonify({'success': True, 'message': 'OTP sent successfully!'})
+    except Exception as e:
+        app.logger.exception("Error sending admin OTP")
+        return jsonify({'success': False, 'message': f'Failed to send OTP: {str(e)}'})
+
+
+# Verify OTP and create pending admin user
+@app.route('/verify_admin_otp', methods=['POST'])
+def verify_admin_otp():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'})
+
+    entered_otp = data.get('otp')
+    session_otp = session.get('admin_otp')
+
+    if not session_otp:
+        return jsonify({'success': False, 'message': 'OTP expired or not generated.'})
+
+    if str(entered_otp) != str(session_otp):
+        session.pop('admin_otp', None)
+        return jsonify({'success': False, 'message': 'Invalid OTP'})
+
+    # OTP is valid → create PendingUser entry
+    hashed_pw = bcrypt.generate_password_hash(session['admin_temp_password']).decode('utf-8')
+
+    pending_admin = PendingUser(
+        first_name=session['admin_temp_first_name'],
+        last_name=session['admin_temp_last_name'],
+        username=session['admin_temp_username'],
+        email=session['admin_temp_email'],
+        password=hashed_pw,
+        role='admin',
+        department=None,
+        is_approved=False
+    )
+
+    try:
+        db.session.add(pending_admin)
+        db.session.commit()
+        session_keys = [
+            'admin_otp', 'admin_temp_first_name', 'admin_temp_last_name',
+            'admin_temp_username', 'admin_temp_email', 'admin_temp_password'
+        ]
+        for key in session_keys:
+            session.pop(key, None)
+
+        return jsonify({'success': True, 'message': 'Secret admin request submitted successfully and pending approval!'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error creating pending admin: {str(e)}'})
+
+
+
 @app.route('/pending_accounts')
 def pending_accounts():
     # Fetch records from PendingUser table (not yet approved)
@@ -248,7 +357,7 @@ def pending_accounts():
             "username": p.username,
             "email": p.email,
             "role": p.role.capitalize(),
-            "department": p.department.capitalize() if p.department else "Employee",
+            "department": p.department.capitalize() if p.department else "N/A",
             "created_at": p.created_at.strftime("%B %d, %Y at %I:%M %p"),
             "is_approved": "TRUE" if p.is_approved else "FALSE"
         })
@@ -422,6 +531,11 @@ def delete_account(user_id):
     if not user:
         return jsonify({'success': False, 'message': 'User not found'})
 
+    if user.role == 'admin':
+        admin_count = User.query.filter_by(role='admin').count()
+        if admin_count <= 1:
+            return jsonify({'success': False, 'message': 'Cannot delete the last admin account'})
+
     try:
         db.session.delete(user)
         db.session.commit()
@@ -447,6 +561,16 @@ def allowed_file(filename):
 def submit_ticket():
     if current_user.role != 'employee':
         flash("Only employees can submit tickets.", "danger")
+        return redirect(url_for('dashboard'))
+
+    # LIMIT: Max 4 active tickets per user
+    active_tickets = Ticket.query.filter(
+        Ticket.submitted_by == current_user.id,
+        Ticket.status.in_(["Pending", "Approved"])
+    ).count()
+
+    if active_tickets >= 4:
+        flash("You have reached the maximum of 4 active tickets. Please wait until one ticket is marked done.","danger")
         return redirect(url_for('dashboard'))
 
     title = request.form['title']
