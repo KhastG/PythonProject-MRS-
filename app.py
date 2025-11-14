@@ -611,6 +611,24 @@ def delete_ticket(ticket_id):
 
     return redirect(url_for('dashboard'))
 
+@app.route('/transfer_ticket/<int:ticket_id>', methods=['GET', 'POST'])
+@login_required
+def transfer_ticket(ticket_id):
+    if current_user.role != 'admin':
+        flash("You are not authorized to transfer tickets.", "danger")
+        return redirect(url_for('admin_dashboard'))
+
+    ticket = Ticket.query.get_or_404(ticket_id)
+
+    if request.method == 'POST':
+        new_category = request.form['category']
+        ticket.category = new_category
+        db.session.commit()
+        flash(f"Ticket #{ticket.id} transferred to {new_category.capitalize()} successfully.", "success")
+        return redirect(url_for('admin_dashboard'))
+
+    return render_template('transfer_ticket.html', ticket=ticket)
+
 @app.route('/image/<int:ticket_id>')
 def get_ticket_image(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
@@ -660,7 +678,8 @@ def filter_tickets():
             'status': getattr(t, 'status', 'Done'),  # Tickets have status, DoneTicket will be handled separately
             'category': getattr(t, 'category', getattr(t, 'department', '')),
             'submitted_name': getattr(t, 'submitted_name',f"{getattr(t, 'employee_first_name', '')} {getattr(t, 'employee_last_name', '')}").strip(),
-            'date_submitted': getattr(t, 'date_submitted', getattr(t, 'date_done', None)).strftime("%B %d, %Y at %I:%M %p")
+            'date_submitted': getattr(t, 'date_submitted', getattr(t, 'date_done', None)).strftime("%B %d, %Y at %I:%M %p"),
+            "photo_data": bool(t.photo_data)
 
             if getattr(t, 'date_submitted', getattr(t, 'date_done', None))
             else ''

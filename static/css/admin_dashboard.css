@@ -17,6 +17,7 @@ html, body {
 
 header {
   background-color: #E57373;
+  border-bottom: 2px solid #f28b82;
   padding: 20px;
   color: white;
   display: flex;
@@ -58,7 +59,7 @@ header {
 
 .admin-nav {
   background-color: #ffe6e6;
-  border-bottom: 2px solid #f28b82;
+  border-bottom: 2px solid #C30F16;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
@@ -152,6 +153,11 @@ header {
   color: white;
 }
 
+.btn-warning{
+    margin-left: 40px;
+    width:50%;
+}
+
 .btn-danger:hover {
   background-color: #c82333;
 }
@@ -220,63 +226,57 @@ th {
   background-color: #f8f9fa;
 }
 
+/* Overlay background (dimmed background behind modal) */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.45); /* slightly transparent black */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
 }
 
+/* White card/modal box */
 .modal-content {
-  background: #ffffff;
-  color: black;
-  width: 300px;
-  max-width: 90%;
-  padding: 20px 25px;
-  border-radius: 10px;
+  background: #fff;                /* ✅ White background */
+  border-radius: 16px;             /* rounded corners */
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;                /* controls modal width */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   text-align: center;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
-  position: relative;
-  overflow: hidden;
 }
 
-.modal-header-approve,
-.modal-header-reject,
-.modal-header-success {
-  font-weight: bold;
-  padding: 10px;
-  color: white;
-  border-radius: 6px 6px 0 0;
-  margin: 0 0 15px 0;
-  font-size: 16px;
-  border-bottom: 3px solid transparent;
-}
-
+/* Optional headers for color accenting */
 .modal-header-approve {
-  background-color: #007bff;
-  border-bottom-color: #007bff;
+  font-size: 20px;
+  font-weight: 600;
+  color: #0d6efd;                  /* blue for approve */
+  margin-bottom: 12px;
 }
 
 .modal-header-reject {
-  background-color: #dc3545;
-  border-bottom-color: #dc3545;
+  font-size: 20px;
+  font-weight: 600;
+  color: #dc3545;                  /* red for reject */
+  margin-bottom: 12px;
 }
 
 .modal-header-success {
-  background-color: #28a745;
-  border-bottom-color: #28a745;
+  font-size: 20px;
+  font-weight: 600;
+  color: #198754;                  /* green for success */
+  margin-bottom: 12px;
 }
 
+/* Button alignment */
 .modal-buttons {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 12px;
+  margin-top: 20px;
 }
-
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
