@@ -15,13 +15,15 @@ html, body {
   min-height: 100vh;
 }
 
+/* Header styling */
 header {
-  background-color: #f28b82;
+  background-color: #E57373;
+  padding: 30px 20px;
   color: white;
-  padding: 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
+  position: relative;
 }
 
 .title h1 {
@@ -36,7 +38,11 @@ header {
 }
 
 .logout-link {
-  background-color: rgba(255,255,255,0.3);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #F28B82;
   color: white;
   padding: 8px 16px;
   border-radius: 6px;
@@ -47,7 +53,6 @@ header {
 .logout-link:hover {
   background-color: rgba(255,255,255,0.5);
 }
-
 .container {
   max-width: 900px;
   margin: 20px auto;

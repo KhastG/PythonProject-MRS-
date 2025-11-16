@@ -2,7 +2,7 @@ import random
 import os
 import threading
 
-from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify, send_file, abort, Response
+from flask import Flask, render_template, redirect, url_for, request, session, jsonify, Response, get_flashed_messages, flash
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user, UserMixin
 from flask_mail import Mail, Message
@@ -296,6 +296,8 @@ def send_admin_otp():
 
 
 # Verify OTP and create pending admin user
+from sqlalchemy.exc import IntegrityError
+
 @app.route('/verify_admin_otp', methods=['POST'])
 def verify_admin_otp():
     data = request.get_json()
@@ -329,6 +331,8 @@ def verify_admin_otp():
     try:
         db.session.add(pending_admin)
         db.session.commit()
+
+        # Clear session
         session_keys = [
             'admin_otp', 'admin_temp_first_name', 'admin_temp_last_name',
             'admin_temp_username', 'admin_temp_email', 'admin_temp_password'
@@ -337,11 +341,14 @@ def verify_admin_otp():
             session.pop(key, None)
 
         return jsonify({'success': True, 'message': 'Secret admin request submitted successfully and pending approval!'})
-    except Exception as e:
+
+    except IntegrityError as e:
         db.session.rollback()
-        return jsonify({'success': False, 'message': f'Error creating pending admin: {str(e)}'})
-
-
+        # Check if the error is due to duplicate entry
+        if "Duplicate entry" in str(e.orig):
+            return jsonify({'success': False, 'message': 'Email or username already exists. Please use a different one.'})
+        else:
+            return jsonify({'success': False, 'message': f'Error creating pending admin: {str(e)}'})
 
 @app.route('/pending_accounts')
 def pending_accounts():
@@ -373,34 +380,41 @@ def update_account_status(pending_id):
 
     try:
         if approve:
-            # Move pending user to actual User table
+            #1: update the column is_approved from the pending_user table
+            pending.is_approved = True
+            db.session.commit()  # commit here so is_approved is saved
+
+            #2: Move to user table
             new_user = User(
                 first_name=pending.first_name,
                 last_name=pending.last_name,
                 username=pending.username,
                 password=pending.password,  # already hashed
-                email=pending.email,
                 role=pending.role,
                 department=pending.department,
+                email=pending.email,
                 is_approved=True
             )
             db.session.add(new_user)
+            db.session.commit()  # commit the new user
 
-            # Send approval email to the user
+            # Step 3: Delete pending record
+            db.session.delete(pending)
+            db.session.commit()
+
+            # Send approval email to user
             try:
                 subject = "Your account has been approved"
-                created_at_str = datetime.now(ZoneInfo("Asia/Manila")).strftime('%B %d, %Y at %I:%M %p')
+                approved_at_str = datetime.now(ZoneInfo("Asia/Manila")).strftime('%B %d, %Y at %I:%M %p')
                 body_html = f"""
                 <p>Your account <strong>{new_user.username}</strong> has been approved by the admin.</p>
                 <p>You can now log in.</p>
-                <p><small>Approved at: {created_at_str}</small></p>
+                <p><small>Approved at: {approved_at_str}</small></p>
                 """
                 mail.send(Message(subject=subject, recipients=[new_user.email], html=body_html))
             except Exception as email_err:
                 app.logger.warning(f"Failed to send approval email: {email_err}")
 
-            db.session.delete(pending)
-            db.session.commit()
             msg = f"User {new_user.username} approved and moved to users."
             return jsonify({"message": msg})
 
@@ -412,7 +426,7 @@ def update_account_status(pending_id):
             db.session.delete(pending)
             db.session.commit()
 
-            # Send rejection email to the user
+            # Send rejection email
             try:
                 subject = "Your account has been rejected"
                 body_html = f"""
@@ -438,25 +452,32 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
+        #Check approved users
         user = User.query.filter_by(username=username).first()
         if user and bcrypt.check_password_hash(user.password, password):
-            if not user.is_approved and user.role != 'admin':
-                flash('Your account is pending admin approval.', 'warning')
-                return redirect(url_for('login'))
             login_user(user)
-            flash('Login successful!', 'success')
-            # redirect to proper dashboard based on role
             if user.role == 'employee':
                 return redirect(url_for('dashboard'))
             elif user.role == 'maintenance':
                 return redirect(url_for('maintenance_dashboard'))
             elif user.role == 'admin':
                 return redirect(url_for('admin_dashboard'))
-        else:
-            flash('Invalid username or password.', 'danger')
-            return redirect(url_for('login'))
 
-    return render_template('login.html')
+        # Check pending users
+        pending_user = PendingUser.query.filter_by(username=username).first()
+        if pending_user and bcrypt.check_password_hash(pending_user.password, password):
+            flash("Your account is pending admin approval.", "error")
+            return redirect(url_for('login'))  #Redirect instead of rendering
+
+        # If neither matched
+        flash("Invalid username or password.", "error")
+        return redirect(url_for('login'))  # Redirect instead of rendering
+
+    # GET request
+    messages = get_flashed_messages(category_filter=["error"])
+    login_error = messages[0] if messages else None
+    return render_template('login.html', login_error=login_error)
+
 
 
 @app.route('/dashboard')
@@ -494,15 +515,39 @@ def admin_dashboard():
         flash('Access denied.', 'danger')
         return redirect(url_for('login'))
 
-    users = User.query.all()
-    tickets = Ticket.query.order_by(Ticket.id.desc()).all() # Sorted by ID (latest first)
+    #: Migrate approved pending users
+    approved_pending_users = PendingUser.query.filter_by(is_approved=1).all()
+    for p_user in approved_pending_users:
+        # Create new User instance
+        new_user = User(
+            first_name=p_user.first_name,
+            last_name=p_user.last_name,
+            username=p_user.username,
+            email=p_user.email,
+            role=p_user.role,
+            department=p_user.department
+        )
+        db.session.add(new_user)
+        db.session.delete(p_user)  # Remove from pending table
 
-    # Capitalize department names (for consistency kase may UIX error sa webpage na Electrical lng ang maayos na naka-capitalize)
+    if approved_pending_users:
+        db.session.commit()  # Commit only if there are approved users
+
+    #2: Fetch data for rendering
+    users = User.query.all()
+    tickets = Ticket.query.order_by(Ticket.id.desc()).all()  # Sorted by ID (latest first)
+
+    # Capitalize department names for UI consistency
     for t in tickets:
         if t.category:
             t.category = t.category.capitalize()
 
-    return render_template('admin_dashboard.html', user=current_user, users=users, tickets=tickets)
+    return render_template(
+        'admin_dashboard.html',
+        user=current_user,
+        users=users,
+        tickets=tickets
+    )
 
 
 @app.route('/existing_accounts')
@@ -548,7 +593,7 @@ def delete_account(user_id):
             db.session.execute(text(f"ALTER TABLE user AUTO_INCREMENT = {max_id + 1}"))
         db.session.commit()
 
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'message': 'Account deleted successfully!'})
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': str(e)})

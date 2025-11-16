@@ -34,6 +34,20 @@
 <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
     <p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
 </footer>
+
+{% if login_error %}
+<input type="hidden" id="loginError" value="{{ login_error }}">
+{% endif %}
+
+<!-- ERROR MODAL -->
+<div id="errorModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Invalid Input</h3>
+        <p id="errorMessage"></p>
+        <button id="closeModalBtn">OK</button>
+    </div>
+</div>
+
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </body>
 </html>
