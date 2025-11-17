@@ -5,19 +5,46 @@
     <title>Maintenance Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/maintenance_dashboard.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/png"  href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
 </head>
 <body>
+
 <header style="background-color:#f28b82; color: white; padding: 20px;">
     <div class="d-flex justify-content-between align-items-center">
         <div class="title">
             <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
             <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
         </div>
-        <a class="logout-link" href="{{ url_for('logout') }}"
-           style="background-color: rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none;">
-            LOG OUT
-        </a>
+
+        <!-- HAMBURGER MENU -->
+        <div class="dropdown">
+            <button id="hamburgerBtn" class="btn text-white dropdown-toggle" type="button"
+                    data-bs-toggle="dropdown" aria-expanded="false" style="border: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" class="bi bi-list"
+                     viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                          d="M2.5 12a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5
+                 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z"/>
+                </svg>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 220px;">
+                <!-- USER INFO -->
+                <li class="px-3 py-2 text-center">
+                    <strong>{{ user.first_name }} {{ user.last_name }}</strong><br>
+                    <small class="text-muted">{{ user.role|capitalize }}</small>
+                </li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+
+                <!-- MENU OPTIONS -->
+                <li><a class="dropdown-item" href="/about">About</a></li>
+                <li><a class="dropdown-item text-danger fw-bold" href="#" id="logoutBtn"
+                       data-href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+
     </div>
 </header>
 
@@ -57,7 +84,7 @@
     </div>
 
     <hr>
-    <h3 class="mb-3">Tickets Assigned to {{ user.department|upper }} Department</h3>
+    <h3 class="mb-3">Tickets Assigned to Department</h3>
 
     <!-- CARDS FOR TICKET-->
     {% if tickets %}
@@ -78,7 +105,8 @@
                     <p class="mb-1"><strong>Status:</strong> {{ ticket.status }}</p>
                     <p class="mb-1"><strong>Department:</strong> {{ ticket.category|upper }}</p>
                     <p class="mb-1"><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
-                    <p class="text-muted"><small>Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</small></p>
+                    <p class="text-muted"><small>Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p')
+                        }}</small></p>
 
                     {% if ticket.status == 'Pending' %}
                     <div class="d-flex justify-content-start gap-2 mt-3">
@@ -90,7 +118,9 @@
                         <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=ticket.id) }}">
                             <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
                         </form>
-                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.id }}">View</button>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#viewModal{{ ticket.id }}">View
+                        </button>
                     </div>
 
                     {% elif ticket.status == 'Approved' %}
@@ -98,13 +128,17 @@
                         <form method="POST" action="{{ url_for('done_ticket', ticket_id=ticket.id) }}">
                             <button type="submit" class="btn btn-primary btn-sm">Done</button>
                         </form>
-                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.id }}">View</button>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#viewModal{{ ticket.id }}">View
+                        </button>
                     </div>
 
                     {% elif ticket.status == 'Done' %}
                     <div class="d-flex justify-content-start gap-2 mt-3">
                         <button class="btn btn-secondary btn-sm" disabled>Completed</button>
-                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ ticket.id }}">View</button>
+                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#viewModal{{ ticket.id }}">View
+                        </button>
                     </div>
                     {% endif %}
                 </div>
@@ -122,7 +156,8 @@
                 <div class="modal-content">
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title }}</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <p><strong>Description:</strong></p>
@@ -130,11 +165,13 @@
                         <hr>
                         <p><strong>Category:</strong> {{ ticket.category }}</p>
                         <p><strong>Status:</strong> {{ ticket.status }}</p>
-                        <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p')
+                            }}</p>
                         {% if ticket.status != 'Pending' %}
                         <hr>
                         <p><strong>Approved By:</strong> {{ ticket.approved_by or 'N/A' }}</p>
-                        <p><strong>Date Approved:</strong> {{ ticket.date_approved.strftime('%B %d, %Y at %I:%M %p') if ticket.date_approved else 'N/A' }}</p>
+                        <p><strong>Date Approved:</strong> {{ ticket.date_approved.strftime('%B %d, %Y at %I:%M %p') if
+                            ticket.date_approved else 'N/A' }}</p>
                         {% endif %}
                     </div>
                     <div class="modal-footer">
@@ -150,8 +187,31 @@
     {% endif %}
 </div>
 
+<!--LOGOUT CONFIRMATION MODAL-->
+<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirm Logout</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Are you sure you want to log out?
+            </div>
+
+            <div class="modal-footer">
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">Yes</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
-  <p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
+    <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

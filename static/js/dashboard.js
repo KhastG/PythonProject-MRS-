@@ -12,7 +12,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // PREVENTION ERROR KUNG THE CONTAINER WAS MISSING (TO AVOID SYSTEM ERR)
     if (!ticketContainer) {
         console.warn("Ticket container (#ticketContainer) not found. Filter script will not run.");
-        return;
+    }
+
+    // LOG-OUT TRIGGER
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            const modal = new bootstrap.Modal(
+                document.getElementById("logoutConfirmModal")
+            );
+            modal.show();
+        });
     }
 
     const getFilterValue = (el, fallback = 'All') => (el ? el.value : fallback);

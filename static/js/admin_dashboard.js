@@ -25,8 +25,79 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // LOG-OUT TRIGGER
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            const modal = new bootstrap.Modal(
+                document.getElementById("logoutConfirmModal")
+            );
+            modal.show();
+        });
+    }
+
     if (deptFilter && !deptFilter.value) deptFilter.value = "All";
     if (statusFilter && !statusFilter.value) statusFilter.value = "All";
+
+     function setupTablePagination(tbodyId) {
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        const rowsPerPage = 5;
+        if (rows.length <= rowsPerPage) return;
+
+        // Remove existing pagination if present
+        const existingPagination = tbody.parentNode.parentNode.querySelector(".pagination");
+        if (existingPagination) existingPagination.remove();
+
+        let currentPage = 1;
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        // Create pagination container
+        const pagination = document.createElement("div");
+        pagination.className = "pagination mt-2 text-center";
+        tbody.parentNode.parentNode.appendChild(pagination);
+
+        function showPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            // Show/hide rows
+            rows.forEach((row, idx) => {
+                row.style.display = idx >= start && idx < end ? "table-row" : "none";
+            });
+
+            // Render pagination buttons
+            pagination.innerHTML = "";
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement("button");
+                btn.textContent = i;
+                btn.className = i === page ? "btn btn-sm btn-danger mx-1" : "btn btn-sm btn-outline-danger mx-1";
+                btn.addEventListener("click", () => {
+                    currentPage = i;
+                    showPage(currentPage);
+                });
+                pagination.appendChild(btn);
+            }
+
+            // Next button
+            if (page < totalPages) {
+                const nextBtn = document.createElement("button");
+                nextBtn.textContent = "Next";
+                nextBtn.className = "btn btn-sm btn-outline-danger ms-2";
+                nextBtn.addEventListener("click", () => {
+                    currentPage++;
+                    showPage(currentPage);
+                });
+                pagination.appendChild(nextBtn);
+            }
+        }
+
+        showPage(currentPage);
+    }
 
     // FETCH FILTERED TICKETS
     function fetchFilteredTickets() {
@@ -114,6 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     `);
                 });
+
+                setupTablePagination("ticketBody");
             })
             .catch(() => {
                 ticketBody.innerHTML = `<td colspan="7" class="text-center text-danger py-3">Failed to load tickets.</td>`;
@@ -167,6 +240,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         new bootstrap.Modal(document.getElementById("rejectModal")).show();
                     });
                 });
+
+                setupTablePagination("pendingAccountsBody");
             })
             .catch(err => {
                 console.error("Error fetching accounts:", err);
@@ -207,6 +282,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateAccountStatus(currentUserId, false);
     });
 
+    //FETCH EXISTING ACCOUNTS
     function fetchExistingAccounts() {
         const tableBody = document.getElementById("existingAccountsBody");
         if (!tableBody) return;
@@ -251,6 +327,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         new bootstrap.Modal(document.getElementById("deleteModal")).show();
                     });
                 });
+
+                setupTablePagination("existingAccountsBody");
             })
             .catch(err => console.error("Error fetching existing accounts:", err));
     }

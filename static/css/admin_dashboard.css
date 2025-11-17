@@ -1,3 +1,4 @@
+/* Hide Scrollbar */
 body::-webkit-scrollbar {
   display: none;
 }
@@ -15,6 +16,7 @@ html, body {
   min-height: 100vh;
 }
 
+/* Header styling */
 header {
   background-color: #E57373;
   border-bottom: 2px solid #f28b82;
@@ -24,37 +26,53 @@ header {
   align-items: center;
   justify-content: center;
   position: relative;
+   z-index: 2000;
 }
 
-.title p {
-  display: block;
-  text-align: center;
-  line-height: 1.4;
-  white-space: normal;
-}
-
-.title p {
-  display: block;
-  text-align: center;
-  line-height: 1.4;
-  white-space: normal;
-}
-
-.logout-link {
+header .dropdown {
   position: absolute;
   right: 20px;
   top: 50%;
   transform: translateY(-50%);
-  background-color: #F28B82;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: bold;
 }
 
-.logout-link:hover {
-  background-color: rgba(255,255,255,0.5);
+header .dropdown-menu {
+    position: absolute;
+    z-index: 3000;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-menu li.text-center {
+    font-size: 14px;
+}
+
+.dropdown-menu li.text-center strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.dropdown-menu li.text-center small {
+    font-size: 12px;
+    color: #888;
+}
+
+.dropdown-menu {
+    z-index: 1050;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.title p {
+  display: block;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .admin-nav {
@@ -91,7 +109,7 @@ header {
 
 .nav-content-container {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
 }
 
@@ -183,7 +201,7 @@ header {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  margin-left:100px;
+  margin-left:-30px;
 }
 
 .delete-btn:hover {
@@ -229,7 +247,7 @@ th {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45); /* slightly transparent black */
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -238,11 +256,11 @@ th {
 
 /* White card/modal box */
 .modal-content {
-  background: #fff;                /* ✅ White background */
-  border-radius: 16px;             /* rounded corners */
+  background: #fff;
+  border-radius: 16px;
   padding: 24px;
   width: 100%;
-  max-width: 400px;                /* controls modal width */
+  max-width: 400px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   text-align: center;
 }
@@ -251,21 +269,21 @@ th {
 .modal-header-approve {
   font-size: 20px;
   font-weight: 600;
-  color: #0d6efd;                  /* blue for approve */
+  color: #0d6efd;
   margin-bottom: 12px;
 }
 
 .modal-header-reject {
   font-size: 20px;
   font-weight: 600;
-  color: #dc3545;                  /* red for reject */
+  color: #dc3545;
   margin-bottom: 12px;
 }
 
 .modal-header-success {
   font-size: 20px;
   font-weight: 600;
-  color: #198754;                  /* green for success */
+  color: #198754;
   margin-bottom: 12px;
 }
 

@@ -1,6 +1,7 @@
 import random
 import os
 import threading
+import mimetypes
 
 from flask import Flask, render_template, redirect, url_for, request, session, jsonify, Response, get_flashed_messages, flash
 from flask_bcrypt import Bcrypt
@@ -92,6 +93,20 @@ class DoneTicket(db.Model):
     date_approved = db.Column(db.DateTime, nullable=False)
     date_done = db.Column(db.DateTime, nullable=False)
 
+#email helper function
+def send_email(subject, recipient, body, html_body=None, sender=None):
+    try:
+        msg = Message(subject, recipients=[recipient])
+        if html_body:
+            msg.html = html_body
+        else:
+            msg.body = body
+        if sender:
+            msg.sender = sender
+        mail.send(msg)
+    except Exception as e:
+        app.logger.warning(f"Failed to send email to {recipient}: {e}")
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -129,9 +144,11 @@ def signup():
 
         # Send OTP email (SAFELY, added some features na pag nag enter si user ng non-existing email addr, this block of code will catch it)
         try:
-            msg = Message('Your OTP Code', recipients=[email])
-            msg.body = f'Your OTP is: {otp}'
-            mail.send(msg)
+            send_email(
+                subject="Your OTP Code",
+                recipient=email,
+                body=f"Your OTP is: {otp}"
+            )
         except (SMTPRecipientsRefused, ValueError):
             flash('Failed to send OTP. Please check your email address and try again.', 'danger')
             return redirect(url_for('signup'))
@@ -190,32 +207,19 @@ def verify_otp():
                     </ul>
                     """
 
-                    # Save original credentials
-                    original_username = app.config['MAIL_USERNAME']
-                    original_password = app.config['MAIL_PASSWORD']
+                    admin_email = app.config.get('ADMIN_EMAIL')
+                    admin_sender_email = app.config.get('ADMIN_MAIL_USERNAME')  # the Gmail account sending this
+                    admin_sender_name = os.getenv('ADMIN_MAIL_SENDER_NAME', 'Maintenance System')
 
-                    # Use admin email credentials temporarily
-                    app.config['MAIL_USERNAME'] = app.config.get('ADMIN_MAIL_USERNAME')
-                    app.config['MAIL_PASSWORD'] = app.config.get('ADMIN_MAIL_PASSWORD')
-
-                    try:
-                        admin_email = app.config.get('ADMIN_EMAIL') or 'saixii.ixix2@gmail.com'
-                        msg = Message(
-                            subject=subject,
-                            recipients=[admin_email],
-                            html=body_html,
-                            sender=(os.getenv('ADMIN_MAIL_SENDER_NAME', 'Maintenance System'), admin_email)
-                        )
-                        mail.send(msg)
-                    finally:
-                        # Restore original OTP email credentials
-                        app.config['MAIL_USERNAME'] = original_username
-                        app.config['MAIL_PASSWORD'] = original_password
-
+                    msg = Message(
+                        subject=subject,
+                        recipients=[admin_email],
+                        html=body_html,
+                        sender=(admin_sender_name, admin_sender_email)  # override sender here
+                    )
+                    mail.send(msg)
                 except Exception as email_err:
                     app.logger.warning(f"Failed to send admin notification: {email_err}")
-                    # don't abort user flow if email fails
-
                 flash('Your account has been created and is pending admin approval.', 'info')
 
                 # Clear session temp data
@@ -226,7 +230,7 @@ def verify_otp():
 
                 return redirect(url_for('login'))
 
-            except Exception as e :
+            except:
                 db.session.rollback()
                 app.logger.exception("Error creating pending user")
                 flash('Username or email already exists or an error occurred. Please try again with different credentials.', 'danger')
@@ -478,18 +482,24 @@ def login():
     login_error = messages[0] if messages else None
     return render_template('login.html', login_error=login_error)
 
-
-
 @app.route('/dashboard')
 @login_required
 def dashboard():
     if current_user.role != 'employee':
         flash("Unauthorized access.", "danger")
         return redirect(url_for('login'))
+
     tickets = Ticket.query.filter_by(submitted_by=current_user.id).all()
 
-    return render_template('dashboard.html', user=current_user, tickets=tickets)
+    # Count active tickets (e.g., Pending or Approved)
+    active_tickets = sum(1 for t in tickets if t.status in ['Pending', 'Approved'])
 
+    return render_template(
+        'dashboard.html',
+        user=current_user,
+        tickets=tickets,
+        active_tickets=active_tickets
+    )
 
 @app.route('/maintenance_dashboard')
 @login_required
@@ -633,14 +643,8 @@ def submit_ticket():
     photo_data = None
 
     if photo and allowed_file(photo.filename):
-        filename = secure_filename(photo.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        photo.save(file_path)
-        photo_filename = filename
-
-        # Read the actual binary data to store in DB
-        with open(file_path, 'rb') as f:
-            photo_data = f.read()
+        photo_filename = secure_filename(photo.filename)
+        photo_data = photo.read()
 
     new_ticket = Ticket(
         title=title,
@@ -655,6 +659,27 @@ def submit_ticket():
     db.session.add(new_ticket)
     db.session.commit()
     flash("Ticket submitted successfully!", "success")
+
+    # Send notification to the maintenance user of that department
+    maintenance_user = User.query.filter_by(role='maintenance', department=category).first()
+    if maintenance_user:
+        if maintenance_user:
+            body = f"""
+            Hello {maintenance_user.first_name},
+
+            A new ticket has been submitted in your department.
+
+            Title: {title}
+            Description: {description}
+            Submitted by: {submitted_name}
+
+            Please review it as soon as possible.
+            """
+            send_email(
+                subject="New Ticket Submitted",
+                recipient=maintenance_user.email,
+                body=body
+            )
     return redirect(url_for('dashboard'))
 
 @app.route('/approve_ticket/<int:ticket_id>', methods=['POST'])
@@ -675,6 +700,23 @@ def approve_ticket(ticket_id):
 
     db.session.commit()
     flash("Ticket approved successfully!", "success")
+
+    # Send email to the employee who submitted the ticket
+    employee = User.query.get(ticket.submitted_by)
+    if employee:
+        body = f"""
+        Hello {employee.first_name},
+
+        Your ticket "{ticket.title}" has been approved by {current_user.first_name} {current_user.last_name}.
+        You can track its progress in your dashboard.
+
+        Thank you.
+        """
+        send_email(
+            subject="Your Ticket Has Been Approved",
+            recipient=employee.email,
+            body=body
+        )
     return redirect(url_for('maintenance_dashboard'))
 
 
@@ -728,6 +770,22 @@ def done_ticket(ticket_id):
     ticket.date_approved = done_ticket.date_approved
     db.session.commit()
     flash("Ticket marked as done.", "success")
+
+    # Notify the employee that the ticket is completed
+    employee = User.query.get(ticket.submitted_by)
+    if employee:
+        body = f"""
+        Hello {employee.first_name},
+
+        Your ticket "{ticket.title}" has been marked as DONE by {current_user.first_name} {current_user.last_name}.
+
+        Thank you for using the system.
+        """
+        send_email(
+            subject="Your Ticket Is Completed",
+            recipient=employee.email,
+            body=body
+        )
     return redirect(url_for('maintenance_dashboard'))
 
 
@@ -801,12 +859,22 @@ def transfer_ticket(ticket_id):
 @app.route('/image/<int:ticket_id>')
 def get_ticket_image(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-    if not ticket.photo_data:
+    if not ticket.photo_data or not ticket.photo:
         return "No image found", 404
 
-    return Response(ticket.photo_data, mimetype='image/jpeg', headers={
-        'Content-Length': str(len(ticket.photo_data))
-    })
+    # Guess MIME type from the filename
+    mimetype, _ = mimetypes.guess_type(ticket.photo)
+    if not mimetype:
+        mimetype = 'application/octet-stream'  # fallback
+
+    return Response(
+        ticket.photo_data,
+        mimetype=mimetype,
+        headers={
+            'Content-Length': str(len(ticket.photo_data)),
+            'Content-Disposition': f'inline; filename="{ticket.photo}"'
+        }
+    )
 
 @app.route('/search_users', methods=['GET'])
 def search_users():
@@ -915,6 +983,15 @@ def filter_tickets():
 
     return jsonify(tickets)
 
+@app.route("/about")
+@login_required  # optional if only logged-in users can see it
+def about_page():
+    active_tickets = Ticket.query.filter(
+        Ticket.submitted_by == current_user.id,
+        Ticket.status.in_(["Pending", "Approved"])
+    ).all()
+    return render_template("about.html", active_tickets=active_tickets)
+
 
 @app.route('/logout')
 @login_required
@@ -922,7 +999,6 @@ def logout():
     logout_user()
     flash('Logged out successfully!', 'info')
     return redirect(url_for('login'))
-
 
 if __name__ == '__main__':
     with app.app_context():

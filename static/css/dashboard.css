@@ -20,12 +20,51 @@ html, body {
 /* Header styling */
 header {
   background-color: #E57373;
+  border-bottom: 2px solid #f28b82;
   padding: 20px;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+}
+
+.header-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+header .dropdown {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-menu {
+    z-index: 3000;
+}
+
+.dropdown-menu li.text-center {
+    font-size: 14px;
+}
+
+.dropdown-menu li.text-center strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.dropdown-menu li.text-center small {
+    font-size: 12px;
+    color: #888;
 }
 
 .title h1 {
@@ -37,23 +76,6 @@ header {
   margin: 0;
   text-align: center;
   line-height: 1.4;
-}
-
-.logout-link {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: #F28B82;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.logout-link:hover {
-  background-color: rgba(255,255,255,0.5);
 }
 
 /* Container styling */

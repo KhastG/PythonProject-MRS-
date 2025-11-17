@@ -22,6 +22,6 @@ class Config:
     MAIL_DEFAULT_SENDER = (os.getenv('MAIL_DEFAULT_SENDER_NAME', 'OTP System'),
                            os.getenv('MAIL_USERNAME'))
 
-
+    ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
     ADMIN_MAIL_USERNAME = os.getenv('ADMIN_MAIL_USERNAME', MAIL_USERNAME)
     ADMIN_MAIL_PASSWORD = os.getenv('ADMIN_MAIL_PASSWORD', MAIL_PASSWORD)

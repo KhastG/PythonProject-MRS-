@@ -20,9 +20,9 @@
     <div class="position-relative mb-3" style="background-color:#f28b82; border-bottom: 4px solid #c72c41; padding: 15px 10px; border-radius: 5px;">
         <!-- Back Button -->
         {% if current_user.role == 'admin' %}
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary btn-sm position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%);"><-</a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary btn-sm position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%);">&larr;</a>
         {% elif current_user.role == 'maintenance' %}
-            <a href="{{ url_for('maintenance_dashboard') }}" class="btn btn-secondary btn-sm position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%);"><-</a>
+            <a href="{{ url_for('maintenance_dashboard') }}" class="btn btn-secondary btn-sm position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%);">&larr;</a>
         {% endif %}
         <h3 class="text-white text-center mb-0">Search Results for "{{ query }}"</h3>
     </div>
@@ -48,7 +48,7 @@
 </div>
 
 <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
-    <p class="mb-0">&copy; 2025 | Designed by Poging Noy TEOPE</p>
+    <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
 </footer>
 
 </body>

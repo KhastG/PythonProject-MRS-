@@ -4,6 +4,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const tickets = document.querySelectorAll("#ticketContainer .col-md-4");
     const noTicketsMessage = document.getElementById("noTicketsMessage");
 
+    // LOG-OUT TRIGGER
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            const modal = new bootstrap.Modal(
+                document.getElementById("logoutConfirmModal")
+            );
+            modal.show();
+        });
+    }
+
     function filterTickets() {
         let statusValue = statusFilter.value;
         let deptValue = deptFilter ? deptFilter.value : "All";
