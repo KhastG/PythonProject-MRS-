@@ -112,9 +112,14 @@ document.addEventListener("DOMContentLoaded", function () {
             e.preventDefault();
             return;
         }
-
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
+
+        // RESET ATTEMPTS if inputs are valid
+        if (username && password && safePattern.test(username) && !/['"<>;`]/.test(password)) {
+            attempts = 0; // reset counter
+            localStorage.setItem("login_attempts", "0");
+        }
 
         if (!username || !password) {
             e.preventDefault();
@@ -134,8 +139,6 @@ document.addEventListener("DOMContentLoaded", function () {
             incrementAttempts("Password contains illegal characters.");
             return;
         }
-
-        // If validation passes, form submits → backend will handle pending accounts / wrong passwords
     });
 
     // PAGE ANIMATIONS

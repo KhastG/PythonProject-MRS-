@@ -26,7 +26,7 @@ header {
   align-items: center;
   justify-content: center;
   position: relative;
-   z-index: 2000;
+  z-index: 2000;
 }
 
 header .dropdown {
@@ -108,6 +108,8 @@ header .dropdown-menu {
 }
 
 .nav-content-container {
+  display: flex;
+  flex-direction: column;
   position: relative;
   overflow: visible;
   width: 100%;
@@ -116,7 +118,7 @@ header .dropdown-menu {
 .nav-section {
   position: absolute;
   top: 0;
-  left: 100%;
+  left: 0;
   width: 100%;
   opacity: 0;
   transform: translateX(100%);
@@ -228,7 +230,6 @@ header .dropdown-menu {
     object-fit: contain;
 }
 
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -265,6 +266,27 @@ th {
   text-align: center;
 }
 
+#imageModal .modal-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#imageModal .modal-dialog {
+    max-width: 200px !important;
+}
+
+#imageModal .modal-dialog {
+    max-width: 300px !important;
+}
+
+#imageModal .modal-dialog-centered {
+    display: flex;
+    align-items: center;
+}
+
 /* Optional headers for color accenting */
 .modal-header-approve {
   font-size: 20px;
@@ -298,4 +320,8 @@ th {
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.table-responsive {
+  overflow-x: auto;
 }

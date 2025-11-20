@@ -30,11 +30,9 @@
 
     <p>Don’t have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
 </div>
-
 <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
     <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
 </footer>
-
 {% if login_error %}
 <input type="hidden" id="loginError" value="{{ login_error }}">
 {% endif %}

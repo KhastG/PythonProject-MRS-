@@ -1,0 +1,99 @@
+/* Hide Scrollbar */
+body::-webkit-scrollbar { display: none; }
+
+html, body {
+  background: url('../website_images/ticketing-background.png') no-repeat center center fixed;
+  background-size: cover;
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fff8f6;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header styling */
+header {
+  background-color: #E57373;
+  border-bottom: 2px solid #f28b82;
+  padding: 20px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.header-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+}
+
+.title p {
+  display: block;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.form-box {
+    max-width: 450px;
+    width: 90%;
+    background-color: rgba(255, 255, 255, 0.95);
+    margin: 80px auto 40px auto;
+    padding: 30px 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    animation: fadeInUp 0.5s ease;
+}
+
+.form-box h2 {
+    margin-bottom: 15px;
+    color: #d32f2f;
+}
+
+.form-box p {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.form-box form label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-box input[type="text"] {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+.form-box button {
+    width: 100%;
+    padding: 10px;
+    background-color: #f28b82;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.form-box button:hover {
+    background-color: #d32f2f;
+}
+
+

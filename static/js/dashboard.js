@@ -87,21 +87,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-     document.addEventListener("click", function(e) {
-        const btn = e.target.closest('.view-image-btn');
-        if (!btn) return;
+    document.addEventListener("click", function (e) {
 
-        const ticketId = btn.dataset.ticketId;
-        if (!ticketId) return console.error("No ticket ID found");
+        if (e.target.classList.contains("view-image-btn")) {
 
-        const preview = document.getElementById('previewImage');
-        preview.src = `/image/${ticketId}`;
+            const imageUrl = e.target.dataset.url;
 
-        const imgModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
-        imgModal.show();
+            const modalImg = document.getElementById("modalImage");
+            modalImg.src = imageUrl; // Set image URL dynamically
+
+            const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+            modal.show();
+        }
     });
-
-
 
     //PROTECTION FOR INJECTIONS
     function escapeHtml(str) {

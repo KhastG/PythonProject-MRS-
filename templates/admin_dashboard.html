@@ -54,6 +54,7 @@
         <li class="nav-item active" data-target="accounts">EXISTING ACCOUNTS</li>
         <li class="nav-item" data-target="approvement">SIGN-UP APPROVAL</li>
         <li class="nav-item" data-target="tickets">TICKETS</li>
+        <li class="nav-item" data-target="emailLogs">EMAIL LOGS</li>
     </ul>
 </nav>
 
@@ -149,15 +150,19 @@
                             <td>{{ ticket.submitted_name }}</td>
                             <td>{{ ticket.category }}</td>
                             <td>
-                                <button class="btn btn-info btn-sm mb-1" data-bs-toggle="modal"
-                                        data-bs-target="#viewModal{{ ticket.id }}">
+                                <button class="btn btn-info btn-sm mb-1 view-ticket-btn"
+                                        data-id="{{ ticket.id }}"
+                                        data-title="{{ ticket.title }}"
+                                        data-description="{{ ticket.description }}"
+                                        data-category="{{ ticket.category }}">
                                     View
                                 </button>
-                                <a class="btn btn-secondary btn-sm"
-                                   href="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}"
-                                   target="_blank">
+                                {% if ticket.photo %}
+                                <button class="btn btn-secondary btn-sm view-image-btn"
+                                        data-url="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}">
                                     View Image
-                                </a>
+                                </button>
+                                {% endif %}
                             </td>
                             <td>{{ ticket.date_submitted.strftime('%B %d, %Y') if ticket.date_submitted else 'N/A' }}
                             </td>
@@ -170,27 +175,6 @@
                                 </button>
                             </td>
                         </tr>
-
-                        <!-- TICKET VIEW MODAL -->
-                        <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
-                             aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-dark text-white">
-                                        <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title
-                                            }}</h5>
-                                        <button type="button" class="btn-close btn-close-white"
-                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p><strong>Description:</strong></p>
-                                        <p>{{ ticket.description }}</p>
-                                        <hr>
-                                        <p><strong>Category:</strong> {{ ticket.category }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         {% endfor %}
                         </tbody>
                     </table>
@@ -280,9 +264,76 @@
     </section>
 </div>
 
+<!-- EMAIL LOGS SECTION -->
+<section id="emailLogs" class="nav-section">
+    <div class="container mt-4 mb-5">
+        <h3 class="fw-bold mb-3 text-danger">Email Logs</h3>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white fw-semibold">
+                Sent Email Records
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Recipient Email</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Date Sent</th>
+                    </tr>
+                    </thead>
+                    <tbody id="emailLogsBody">
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">
+                            Loading email logs...
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="text-end mt-3">
+                    <a href="/download_email_logs" class="btn btn-success">
+                        Download Email Logs (CSV file)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
     <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
 </footer>
+
+<!-- GLOBAL TICKET VIEW MODAL -->
+<div class="modal fade" id="viewModalGlobal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Ticket View</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GLOBAL IMAGE MODAL -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Ticket Image</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid rounded border" alt="Ticket Image">
+            </div>
+        </div>
+    </div>
+</div>
 
 <!--LOGOUT CONFIRMATION MODAL-->
 <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">

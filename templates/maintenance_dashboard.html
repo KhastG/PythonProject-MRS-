@@ -159,32 +159,60 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                     </div>
+
                     <div class="modal-body">
                         <p><strong>Description:</strong></p>
                         <p>{{ ticket.description }}</p>
+
                         <hr>
                         <p><strong>Category:</strong> {{ ticket.category }}</p>
                         <p><strong>Status:</strong> {{ ticket.status }}</p>
-                        <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p')
-                            }}</p>
+                        <p><strong>Date Submitted:</strong>
+                            {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
+
                         {% if ticket.status != 'Pending' %}
                         <hr>
                         <p><strong>Approved By:</strong> {{ ticket.approved_by or 'N/A' }}</p>
-                        <p><strong>Date Approved:</strong> {{ ticket.date_approved.strftime('%B %d, %Y at %I:%M %p') if
-                            ticket.date_approved else 'N/A' }}</p>
+                        <p><strong>Date Approved:</strong>
+                            {{ ticket.date_approved.strftime('%B %d, %Y at %I:%M %p') if ticket.date_approved else 'N/A'
+                            }}</p>
+                        {% endif %}
+
+                        {% if ticket.photo %}
+                        <button class="btn btn-secondary btn-sm view-image-btn"
+                                data-url="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}">
+                            View Image
+                        </button>
                         {% endif %}
                     </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
         </div>
+
         {% endfor %}
     </div>
     {% else %}
     <p>No tickets assigned to your department.</p>
     {% endif %}
+</div>
+
+<!-- Global Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Ticket Image</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid rounded border" alt="Ticket Image">
+            </div>
+        </div>
+    </div>
 </div>
 
 <!--LOGOUT CONFIRMATION MODAL-->

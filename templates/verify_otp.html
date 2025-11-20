@@ -2,33 +2,35 @@
 <html lang="en">
 <head>
     <title>Verify OTP</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/verify_otp.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
 </head>
 <body>
-    <header>
+<header style="background-color:#f28b82; color: white; padding: 20px;">
+    <div class="d-flex justify-content-between align-items-center">
         <div class="title">
-            <h1>MAINTENANCE TICKETING SYSTEM</h1>
+            <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
             <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
         </div>
-    </header>
-
-    <div class="form-box">
-        <h2>Email Verification</h2>
-        <p>Please enter the 6-digit OTP sent to your email.</p>
-
-        <form method="POST" action="/verify_otp">
-            <label for="otp">OTP Code:</label><br>
-            <input type="text" id="otp" name="otp" maxlength="6" required><br><br>
-            <button type="submit">Verify</button>
-        </form>
     </div>
+</header>
 
-    <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
-        <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
-    </footer>
+<div class="form-box">
+    <h2>Email Verification</h2>
+    <p>Please enter the 6-digit OTP sent to your email.</p>
 
-    <div id="toast"></div>
-    <script src="{{ url_for('static', filename='js/signup.js') }}"></script>
+    <form method="POST" action="/verify_otp">
+        <label for="otp">OTP Code:</label><br>
+        <input type="text" id="otp" name="otp" maxlength="6" required placeholder="Enter OTP"><br><br>
+        <button type="submit">Verify</button>
+    </form>
+</div>
+
+<footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
+    <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
+</footer>
+
+<div id="toast"></div>
+<script src="{{ url_for('static', filename='js/signup.js') }}"></script>
 </body>
 </html>

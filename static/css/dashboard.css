@@ -190,14 +190,6 @@ header .dropdown {
   color: white;
 }
 
-#imagePreviewModal .modal-backdrop.show {
-    background-color: rgba(0,0,0,0.5); /* semi-transparent gray */
-}
-
-#imagePreviewModal .modal-content {
-    background-color: transparent !important; /* modal itself is transparent */
-}
-
 .modal-backdrop.show {
     background-color: rgba(0, 0, 0, 0.5);
 }
@@ -224,6 +216,37 @@ header .dropdown {
 
 .modal-body hr {
   margin: 10px 0;
+}
+
+.modal-content:not(#imageModal .modal-content) {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+#imageModal .modal-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#imageModal .modal-dialog {
+    max-width: 200px !important;
+}
+
+#imageModal .modal-dialog {
+    max-width: 300px !important;
+}
+
+#imageModal .modal-dialog-centered {
+    display: flex;
+    align-items: center;
 }
 
 /* Shake animation */

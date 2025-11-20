@@ -41,6 +41,20 @@ document.addEventListener("DOMContentLoaded", () => {
         noTicketsMessage.style.display = visibleCount === 0 ? "block" : "none";
     }
 
+    document.addEventListener("click", function (e) {
+
+        if (e.target.classList.contains("view-image-btn")) {
+
+            const imageUrl = e.target.dataset.url;
+
+            const modalImg = document.getElementById("modalImage");
+            modalImg.src = imageUrl; // Set image URL dynamically
+
+            const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+            modal.show();
+        }
+    });
+
     if (statusFilter) statusFilter.addEventListener("change", filterTickets);
     if (deptFilter) deptFilter.addEventListener("change", filterTickets);
 });

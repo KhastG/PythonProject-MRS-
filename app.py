@@ -2,6 +2,7 @@ import random
 import os
 import threading
 import mimetypes
+import csv
 
 from flask import Flask, render_template, redirect, url_for, request, session, jsonify, Response, get_flashed_messages, flash
 from flask_bcrypt import Bcrypt
@@ -93,8 +94,16 @@ class DoneTicket(db.Model):
     date_approved = db.Column(db.DateTime, nullable=False)
     date_done = db.Column(db.DateTime, nullable=False)
 
+class EmailLogs(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    recipient_email = db.Column(db.String(255), nullable=False)
+    subject = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    date_sent = db.Column(db.DateTime, default=lambda: datetime.now(ZoneInfo("Asia/Manila")))
+
 #email helper function
 def send_email(subject, recipient, body, html_body=None, sender=None):
+    status = "SUCCESS"
     try:
         msg = Message(subject, recipients=[recipient])
         if html_body:
@@ -103,9 +112,24 @@ def send_email(subject, recipient, body, html_body=None, sender=None):
             msg.body = body
         if sender:
             msg.sender = sender
+
         mail.send(msg)
     except Exception as e:
+        status = "FAILED"
         app.logger.warning(f"Failed to send email to {recipient}: {e}")
+
+    # Always log email (success or fail)
+    try:
+        log = EmailLogs(
+            recipient_email=recipient,
+            subject=subject,
+            status=status
+        )
+        db.session.add(log)
+        db.session.commit()
+    except:
+        db.session.rollback()
+        app.logger.error("Failed to save email log.")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -147,7 +171,22 @@ def signup():
             send_email(
                 subject="Your OTP Code",
                 recipient=email,
-                body=f"Your OTP is: {otp}"
+                body=f"""
+                Hello,
+
+                Thank you for signing up for the Maintenance Ticketing System.
+
+                Your One-Time Password (OTP) is:
+
+                🔐 {otp}
+
+                Please enter this code within 5 minutes to verify your email address.
+
+                If you did not request this, you may safely ignore this message.
+
+                Best regards,
+                Maintenance Ticketing System
+                """
             )
         except (SMTPRecipientsRefused, ValueError):
             flash('Failed to send OTP. Please check your email address and try again.', 'danger')
@@ -189,24 +228,57 @@ def verify_otp():
 
                 # Send admin notification email
                 try:
-                    subject = "Another User has been Created!"
+                    subject = "New User Registration Pending Approval"
+
                     created_at_str = pending.created_at.strftime('%B %d, %Y at %I:%M %p')
+
                     department_line = ""
                     if str(pending.role).lower() == "maintenance" and pending.department:
-                        department_line = f"<li><strong>Department:</strong> {pending.department}</li>"
-
+                        department_line = f"""
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>Department:</strong></td>
+                                <td style="padding: 6px 0;">{pending.department.title()}</td>
+                            </tr>
+                        """
                     body_html = f"""
-                    <h3>Another User has been Created!</h3>
-                    <ul>
-                      <li><strong>Username:</strong> {pending.username}</li>
-                      <li><strong>Email:</strong> {pending.email}</li>
-                      <li><strong>Status:</strong> Pending for approval</li>
-                      <li><strong>Role:</strong> {pending.role}</li>
-                      {department_line}
-                      <li><strong>Created at:</strong> {created_at_str}</li>
-                    </ul>
+                    <div style="font-family: Arial, sans-serif; line-height: 1.5; padding: 10px;">
+                        <h2 style="color: #d9534f;">New User Created</h2>
+                        <p>A new user has registered in the <strong>Maintenance Ticketing System</strong> and is waiting for your approval.</p>
+                        <table style="border-collapse: collapse; margin-top: 10px;">
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>First Name:</strong></td>
+                                <td style="padding: 6px 0;">{pending.first_name}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>Last Name:</strong></td>
+                                <td style="padding: 6px 0;">{pending.last_name}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>Username:</strong></td>
+                                <td style="padding: 6px 0;">{pending.username}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>Email:</strong></td>
+                                <td style="padding: 6px 0;">{pending.email}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>Role:</strong></td>
+                                <td style="padding: 6px 0;">{pending.role.title()}</td>
+                            </tr>
+                            {department_line}
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>Status:</strong></td>
+                                <td style="padding: 6px 0;">Pending for approval</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0;"><strong>Created At:</strong></td>
+                                <td style="padding: 6px 0;">{created_at_str}</td>
+                            </tr>
+                        </table>
+                        <br>
+                        <p style="color: #888;">This is an automated notification from the Maintenance Ticketing System.</p>
+                    </div>
                     """
-
                     admin_email = app.config.get('ADMIN_EMAIL')
                     admin_sender_email = app.config.get('ADMIN_MAIL_USERNAME')  # the Gmail account sending this
                     admin_sender_name = os.getenv('ADMIN_MAIL_SENDER_NAME', 'Maintenance System')
@@ -286,9 +358,23 @@ def send_admin_otp():
 
     try:
         msg = Message(
-            "Your Admin OTP Code",
+            subject="Administrator Verification Code (OTP)",
             recipients=[session['admin_temp_email']],
-            body=f"Your OTP is: {otp}"
+            body=f"""
+        Hello,
+
+        You are attempting to create a new administrator account in the Maintenance Ticketing System.
+
+        Your administrator verification code (OTP) is:
+
+        🔐 {otp}
+
+        Please enter this code to proceed with the account creation.
+
+        If you did not initiate this request, please ignore this email for security purposes.
+
+        — Maintenance Ticketing System
+        """
         )
         #mail.send(msg)
         threading.Thread(target=send_email_async, args=(msg,), daemon=True).start()
@@ -611,6 +697,39 @@ def delete_account(user_id):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route("/get_email_logs")
+def get_email_logs():
+    logs = EmailLogs.query.order_by(EmailLogs.id.desc()).all()
+    return jsonify([
+        {
+            "id": log.id,
+            "recipient": log.recipient_email,
+            "subject": log.subject,
+            "status": log.status,
+            "date_sent": log.date_sent.strftime("%B %d, %Y %I:%M %p"),
+        }
+        for log in logs
+    ])
+
+@app.route("/download_email_logs")
+def download_email_logs():
+    logs = EmailLogs.query.order_by(EmailLogs.id.desc()).all()
+
+    def generate():
+        yield "ID,Recipient Email,Subject,Status,Date Sent\n"
+        for log in logs:
+            row = f'{log.id},"{log.recipient_email}","{log.subject}",{log.status},"{log.date_sent.strftime("%B %d, %Y %I:%M %p")}"\n'
+            yield row
+
+    return Response(
+        generate(),
+        mimetype="text/csv",
+        headers={
+            "Content-Disposition": "attachment; filename=email_logs.csv"
+        }
+    )
+
+
 @app.route('/submit_ticket', methods=['POST'])
 @login_required
 def submit_ticket():
@@ -667,13 +786,16 @@ def submit_ticket():
             body = f"""
             Hello {maintenance_user.first_name},
 
-            A new ticket has been submitted in your department.
+            A new maintenance ticket has been assigned to your department.
 
-            Title: {title}
-            Description: {description}
-            Submitted by: {submitted_name}
+            🛠️ Ticket Details
+            • Title: {title}
+            • Description: {description}
+            • Submitted by: {submitted_name}
 
-            Please review it as soon as possible.
+            Please review and process this request at your earliest convenience.
+
+            — Maintenance Ticketing System
             """
             send_email(
                 subject="New Ticket Submitted",
@@ -707,10 +829,17 @@ def approve_ticket(ticket_id):
         body = f"""
         Hello {employee.first_name},
 
-        Your ticket "{ticket.title}" has been approved by {current_user.first_name} {current_user.last_name}.
-        You can track its progress in your dashboard.
+        Your maintenance ticket has been approved.
 
-        Thank you.
+        📌 **Ticket Details**
+        • Title: {ticket.title}
+        • Approved by: {current_user.first_name} {current_user.last_name}
+        • Date Approved: {ticket.date_approved.strftime('%B %d, %Y %I:%M %p')}
+
+        You may now track its progress through your dashboard.
+
+        Thank you,
+        Maintenance Department
         """
         send_email(
             subject="Your Ticket Has Been Approved",
@@ -723,7 +852,10 @@ def approve_ticket(ticket_id):
 @app.route('/edit_ticket/<int:ticket_id>', methods=['GET', 'POST'])
 def edit_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
-
+    active_tickets = Ticket.query.filter(
+        Ticket.submitted_by == current_user.id,
+        Ticket.status.in_(["Pending", "Approved"])
+    ).all()
     if request.method == 'POST':
         ticket.title = request.form['title']
         ticket.description = request.form['description']
@@ -732,7 +864,7 @@ def edit_ticket(ticket_id):
         flash('Ticket updated successfully!', 'success')
         return redirect(url_for('dashboard'))
 
-    return render_template('edit_ticket.html', ticket=ticket)
+    return render_template('edit_ticket.html', ticket=ticket, active_tickets=active_tickets)
 
 
 @app.route('/done_ticket/<int:ticket_id>', methods=['POST'])
@@ -777,9 +909,17 @@ def done_ticket(ticket_id):
         body = f"""
         Hello {employee.first_name},
 
-        Your ticket "{ticket.title}" has been marked as DONE by {current_user.first_name} {current_user.last_name}.
+        Your maintenance ticket has been completed.
 
-        Thank you for using the system.
+        📌 **Ticket Details**
+        • Title: {ticket.title}
+        • Completed by: {current_user.first_name} {current_user.last_name}
+        • Date Completed: {datetime.now(ZoneInfo("Asia/Manila")).strftime('%B %d, %Y %I:%M %p')}
+
+        If the issue persists or you need further assistance, feel free to submit a new ticket.
+
+        Thank you,
+        Maintenance Department
         """
         send_email(
             subject="Your Ticket Is Completed",
@@ -1003,4 +1143,4 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

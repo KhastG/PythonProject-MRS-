@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (targetId === "accounts") fetchExistingAccounts();
             if (targetId === "approvement") fetchPendingAccounts();
             if (targetId === "tickets") fetchFilteredTickets();
+            if (targetId === "emailLogs") fetchEmailLogs();
         });
     });
 
@@ -141,8 +142,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         })()
                         : "N/A";
 
-                    let buttonsHtml = `<button class="btn btn-info btn-sm view-ticket-btn" data-id="${t.id}" data-description="${t.description}"
-                                            data-category="${t.category}" data-bs-toggle="modal" data-bs-target="#viewModal${t.id}"> View </button>`;
+                    let buttonsHtml = `<button class="btn btn-info btn-sm view-ticket-btn"
+                        data-id="${t.id}"
+                        data-title="${t.title}"
+                        data-description="${t.description}"
+                        data-category="${t.category}"> View </button>`;
+
 
                     if (t.photo_data) {
                         const imageUrl = statusText === "Done" ? `/done_image/${ticketId}` : `/image/${ticketId}`;
@@ -192,6 +197,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 ticketBody.innerHTML = `<td colspan="7" class="text-center text-danger py-3">Failed to load tickets.</td>`;
             });
     }
+
+     document.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('view-image-btn')) {
+            const modal = document.getElementById('imageModal');
+            modal.querySelector('#modalImage').src = e.target.dataset.url;
+            new bootstrap.Modal(modal).show();
+        }
+
+        // Optional: global ticket view delegation
+        if (e.target && e.target.classList.contains('view-ticket-btn')) {
+            const modal = document.getElementById('viewModalGlobal');
+            modal.querySelector('.modal-title').textContent = e.target.dataset.title;
+            modal.querySelector('.modal-body').innerHTML = `
+                <p><strong>Description:</strong></p>
+                <p>${e.target.dataset.description}</p>
+                <hr>
+                <p><strong>Category:</strong> ${e.target.dataset.category}</p>
+            `;
+            new bootstrap.Modal(modal).show();
+        }
+    });
 
     // FETCH PENDING ACCOUNTS
     function fetchPendingAccounts() {
@@ -352,7 +378,59 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch(err => console.error("Error deleting account:", err));
     });
 
+    function fetchEmailLogs() {
+        fetch("/get_email_logs")
+            .then(res => res.json())
+            .then(data => {
+                const body = document.getElementById("emailLogsBody");
+                body.innerHTML = "";
 
+                if (data.length === 0) {
+                    body.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">
+                                No email logs found.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                data.forEach(log => {
+                    body.innerHTML += `
+                        <tr>
+                            <td>${log.id}</td>
+                            <td>${log.recipient}</td>
+                            <td>${log.subject}</td>
+                            <td>${log.status}</td>
+                            <td>${log.date_sent}</td>
+                        </tr>`;
+                });
+
+                setupTablePagination("emailLogsBody");
+            })
+            .catch(() => {
+                body.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger py-3">
+                            Failed to load email logs.
+                        </td>
+                    </tr>`;
+            });
+    }
+
+    item.addEventListener("click", () => {
+        navItems.forEach(i => i.classList.remove("active"));
+        sections.forEach(s => s.classList.remove("active"));
+
+        item.classList.add("active");
+        const targetId = item.getAttribute("data-target");
+        document.getElementById(targetId).classList.add("active");
+
+        if (targetId === "accounts") fetchExistingAccounts();
+        if (targetId === "approvement") fetchPendingAccounts();
+        if (targetId === "tickets") fetchFilteredTickets();
+        if (targetId === "emailLogs") fetchEmailLogs();
+    });
 
     // INITIAL LOAD
     fetchExistingAccounts();

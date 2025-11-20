@@ -98,5 +98,5 @@ document.addEventListener("DOMContentLoaded", function() {
             form.querySelector("button[type='submit']").disabled = true;
             form.submit();
         });
-    }
+    });
 });

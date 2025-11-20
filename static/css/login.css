@@ -33,9 +33,22 @@ body.fade-out {
 }
 
 header {
-    background-color: #E57373;
-    padding: 30px 20px;
-    color: white;
+  background-color: #E57373;
+  border-bottom: 2px solid #f28b82;
+  padding: 20px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2000;
+}
+
+footer {
+  text-align: center;
+  margin-top: 40px;
+  color: #999;
+  font-size: 14px;
 }
 
 .form-box {
@@ -118,12 +131,6 @@ button:hover {
 
 .modal-box button:hover {
     background-color: #E57373;
-}
-
-footer {
-    background: transparent;
-    margin: 0;
-    padding: 10px 0;
 }
 
 @keyframes popIn {
