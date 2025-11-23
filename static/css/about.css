@@ -171,3 +171,187 @@ header .dropdown {
     margin-bottom: 15px;
     align-text:center;
 }
+
+footer {
+    text-align: center;
+    margin-top: auto;
+    color: white;
+    font-size: 14px;
+    padding-bottom: 20px;
+}
+
+@media(max-width:768px){
+    /* Hide Scrollbar */
+    body::-webkit-scrollbar { display: none; }
+
+    html, body {
+      background: url('../website_images/ticketing-background.png') no-repeat center center fixed;
+      background-size: cover;
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fff8f6;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header styling */
+    header {
+      background-color: #E57373;
+      border-bottom: 2px solid #f28b82;
+      padding: 20px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .header-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        position: relative;
+    }
+
+    header .dropdown {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    .dropdown-menu {
+        z-index: 3000;
+    }
+
+    .dropdown-menu li.text-center {
+        font-size: 14px;
+    }
+
+    .dropdown-menu li.text-center strong {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 2px;
+    }
+
+    .dropdown-menu li.text-center small {
+        font-size: 12px;
+        color: #888;
+    }
+
+
+    .title p {
+      display: block;
+      text-align: center;
+      line-height: 1.4;
+      white-space: normal;
+    }
+
+    /* MAIN CONTAINER */
+    .main-container {
+         width: 95%;
+        max-width: none;
+        margin: 30px auto;
+        padding: 20px;
+        background-color: #fff8f6;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* NAVIGATION (like admin dashboard) */
+    .about-nav {
+        background-color: #ffe6e6;
+        border-bottom: 2px solid #C30F16;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .about-nav ul {
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        margin: 0;
+        padding: 10px 0;
+        gap: 60px;
+    }
+
+    .about-nav li {
+        color: #444;
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.3s, transform 0.3s;
+        padding: 8px 16px;
+        border-radius: 6px;
+    }
+
+    .about-nav li:hover {
+        color: #f28b82;
+        transform: scale(1.1);
+    }
+
+    .about-nav li.active {
+        color: #f28b82;
+        border-bottom: 3px solid #f28b82;
+    }
+
+    /* NAV CONTENT CONTAINER */
+    .nav-content-container {
+        position: relative;
+        height: auto;
+        overflow: hidden;
+    }
+
+
+    .about-section {
+        position: absolute;
+        top: 0;
+        left: 100%;
+        width: 100%;
+        opacity: 0;
+        transition: all 0.5s ease;
+    }
+
+
+    .about-section.active {
+        left: 0;
+        opacity: 1;
+        position: relative;
+    }
+
+
+    .about-section.exit-left {
+        left: -100%;
+        opacity: 0;
+    }
+
+    .profile-pic {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background-color: #ddd;
+        margin: 0 auto 20px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .section-container {
+        width: 100%;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+
+    .section-title {
+        margin-bottom: 15px;
+        align-text:center;
+    }
+}

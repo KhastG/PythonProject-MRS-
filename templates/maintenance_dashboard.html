@@ -9,195 +9,253 @@
 </head>
 <body>
 
-<header style="background-color:#f28b82; color: white; padding: 20px;">
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="title">
-            <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
-            <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
-        </div>
+<header>
+    <div class="title">
+        <h1>MAINTENANCE DASHBOARD</h1>
+        <p>MANAGE TICKETS FOR: {{ user.department|upper }}</p>
+    </div>
 
-        <!-- HAMBURGER MENU -->
-        <div class="dropdown">
-            <button id="hamburgerBtn" class="btn text-white dropdown-toggle" type="button"
-                    data-bs-toggle="dropdown" aria-expanded="false" style="border: none;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" class="bi bi-list"
-                     viewBox="0 0 16 16">
-                    <path fill-rule="evenodd"
-                          d="M2.5 12a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5
-                 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z"/>
-                </svg>
-            </button>
+    <!-- HAMBURGER MENU -->
+    <div class="dropdown">
+        <button id="hamburgerBtn" class="btn text-white dropdown-toggle" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false" style="border: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" class="bi bi-list"
+                 viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                      d="M2.5 12a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z"/>
+            </svg>
+        </button>
 
-            <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 220px;">
-                <!-- USER INFO -->
-                <li class="px-3 py-2 text-center">
-                    <strong>{{ user.first_name }} {{ user.last_name }}</strong><br>
-                    <small class="text-muted">{{ user.role|capitalize }}</small>
-                </li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
+        <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 220px;">
+            <!-- USER (MAINTENANCE) INFO -->
+            <li class="px-3 py-2 text-center">
+                <strong>{{ user.first_name }} {{ user.last_name }}</strong><br>
+                <small class="text-muted">{{ user.role|capitalize }}</small>
+            </li>
+            <li>
+                <hr class="dropdown-divider">
+            </li>
 
-                <!-- MENU OPTIONS -->
-                <li><a class="dropdown-item" href="/about">About</a></li>
-                <li><a class="dropdown-item text-danger fw-bold" href="#" id="logoutBtn"
-                       data-href="{{ url_for('logout') }}">Logout</a></li>
-            </ul>
-        </div>
-
+            <!-- MENU OPTIONS under HAMBURGER MENU -->
+            <li><a class="dropdown-item" href="/about">About</a></li>
+            <li><a class="dropdown-item text-danger fw-bold" href="#" id="logoutBtn"
+                   data-href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
     </div>
 </header>
 
 <div class="container mt-4 mb-5">
-
-    <!-- SEARCH USER BASED ON THEIR ROLE -->
-    <form method="GET" action="{{ url_for('search_users') }}" class="d-flex mb-4" role="search">
-        <input class="form-control me-2" type="search" name="q" placeholder="Search users..." aria-label="Search"
-               required>
-        <button class="btn btn-outline-primary" type="submit">Search</button>
-    </form>
-
-    <!-- USER CREDENTIALS -->
     <div class="user-info mb-4">
         <h2>Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
-        <p>Your role: <strong>{{ user.role|upper }}</strong></p>
-        <p>Department: <strong>{{ user.department|upper }}</strong></p>
+        <p>Your Department: <strong>{{ user.department|upper }}</strong></p>
     </div>
 
-    <!-- FILTERS (DROP-DOWN LIST FOR TICKETS DEPENDING ON THE STATUS) -->
-    <div class="d-flex gap-2 align-items-center mb-3">
-        <select id="statusFilter" class="form-select" style="width: 200px;">
-            <option value="All">All</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Done">Done</option>
-        </select>
+    <!--NAVIGATION(TABBED FORM) -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tickets-tab" data-bs-toggle="tab" data-bs-target="#tickets-body"
+                    type="button" role="tab" aria-controls="tickets-body" aria-selected="true">
+                TICKETS APPROVAL ({{ user.department|upper }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="submit-tab" data-bs-toggle="tab" data-bs-target="#submit-body" type="button"
+                    role="tab" aria-controls="submit-body" aria-selected="false">
+                SUBMIT A TICKET
+            </button>
+        </li>
+    </ul>
 
-        {% if session['role'] == 'admin' %}
-        <select id="deptFilter" class="form-select" style="width: 200px;">
-            <option value="All">All</option>
-            <option value="Carpentry">Carpentry</option>
-            <option value="Electrical">Electrical</option>
-            <option value="Plumbing">Plumbing</option>
-        </select>
-        {% endif %}
-    </div>
+    <!-- TAB CONTENT -->
+    <div class="tab-content" id="myTabContent">
+        <!--TICKETS TAB (Table View) -->
+        <div class="tab-pane fade show active" id="tickets-body" role="tabpanel" aria-labelledby="tickets-tab">
+            <!-- Filter and Search Controls -->
+            <div class="d-flex gap-3 mb-3 flex-wrap">
+                <div class="flex-grow-1">
+                    <label class="form-label fw-bold">Filter by Status</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="All">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label fw-bold">Search (Title/Submitter)</label>
+                    <input type="text" id="searchTickets" class="form-control" placeholder="Search tickets...">
+                </div>
+            </div>
 
-    <hr>
-    <h3 class="mb-3">Tickets Assigned to Department</h3>
+            <!-- Tickets Table -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="tickets-table-body">
+                    <thead>
+                    <tr>
+                        <th scope="col" style="width: 15%;">Status</th>
+                        <th scope="col" style="width: 25%;">Title</th>
+                        <th scope="col" style="width: 20%;">Submitted By</th>
+                        <th scope="col" style="width: 20%;">Date</th>
+                        <th scope="col" style="width: 20%;">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for ticket in tickets %}
+                    <tr class="ticket-row"
+                        data-status="{{ ticket.status }}"
+                        data-title="{{ ticket.title|lower }}"
+                        data-submitter="{{ ticket.submitted_name|lower }}">
+                        <td>
+                                <span class="status-badge
+                                    {% if ticket.status == 'Pending' %} bg-danger
+                                    {% elif ticket.status == 'Approved' %} bg-warning text-dark
+                                    {% elif ticket.status == 'Done' %} bg-success
+                                    {% elif ticket.status == 'Cancelled' %} bg-secondary
+                                    {% endif %}">
+                                    {{ ticket.status }}
+                                </span>
+                        </td>
+                        <td>{{ ticket.title }}</td>
+                        <td>{{ ticket.submitted_name }}</td>
+                        <td>{{ ticket.date_submitted.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-info view-ticket-btn" data-bs-toggle="modal"
+                                        data-bs-target="#viewModal{{ ticket.id }}">
+                                    View
+                                </button>
+                                {% if ticket.status in ['Pending', 'Approved'] %}
+                                <form method="POST" action="{{ url_for('update_ticket_status', ticket_id=ticket.id) }}">
+                                    {% if ticket.status == 'Pending' %}
+                                    <input type="hidden" name="new_status" value="Approved">
+                                    <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                                    {% elif ticket.status == 'Approved' %}
+                                    <input type="hidden" name="new_status" value="Done">
+                                    <button type="submit" class="btn btn-sm btn-success">Done</button>
+                                    {% endif %}
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
 
-    <!-- CARDS FOR TICKET-->
-    {% if tickets %}
-    <div id="ticketContainer" class="row">
-        {% for ticket in tickets %}
-        <div class="col-md-4">
-            <div class="card mb-4 shadow-sm
-                {% if ticket.status == 'Pending' %}
-                    border-danger
-                {% elif ticket.status == 'Approved' %}
-                    border-success
-                {% elif ticket.status == 'Done' %}
-                    border-secondary
-                {% endif %}
-            ">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">{{ ticket.title }}</h5>
-                    <p class="mb-1"><strong>Status:</strong> {{ ticket.status }}</p>
-                    <p class="mb-1"><strong>Department:</strong> {{ ticket.category|upper }}</p>
-                    <p class="mb-1"><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
-                    <p class="text-muted"><small>Submitted: {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p')
-                        }}</small></p>
+                    <!-- VIEW MODAL for each ticket -->
+                    <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
+                         aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-dark text-white">
+                                    <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title }}</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p><strong>Description:</strong></p>
+                                    <p>{{ ticket.description }}</p>
+                                    <hr>
+                                    <p><strong>Department:</strong> {{ ticket.category }}</p>
+                                    <p><strong>Status:</strong> {{ ticket.status }}</p>
+                                    <p><strong>Submitted By:</strong> {{ ticket.submitted_name }}</p>
+                                    <p><strong>Date Submitted:</strong> {{ ticket.date_submitted.strftime('%B %d, %Y at
+                                        %I:%M %p') }}</p>
 
-                    {% if ticket.status == 'Pending' %}
-                    <div class="d-flex justify-content-start gap-2 mt-3">
-                        <form method="POST" action="{{ url_for('approve_ticket', ticket_id=ticket.id) }}">
-                            <button class="btn btn-success btn-sm approve-btn" data-ticket-id="{{ ticket.id }}">
-                                Approve
-                            </button>
-                        </form>
-                        <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=ticket.id) }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
-                        </form>
-                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#viewModal{{ ticket.id }}">View
-                        </button>
+                                    {% if ticket.photo %}
+                                    <hr>
+                                    <button class="btn btn-sm btn-secondary view-image-btn"
+                                            data-url="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}">
+                                        View Attached Image
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <p id="noTicketsMessage" class="text-center text-muted">No tickets found matching the filters.</p>
+            </div>
+        </div>
+
+        <!--SUBMIT A TICKET TAB (Replica from the dashboard for the end users)-->
+        <div class="tab-pane fade" id="submit-body" role="tabpanel" aria-labelledby="submit-tab">
+            <div class="p-4 mb-4 rounded card shadow-sm"
+                 style="background-color: #fff5f5; border: 2px solid #f28b82; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                <h4 class="fw-bold mb-3" style="color: #f28b82;">SUBMIT A TICKET</h4>
+
+                <!-- TICKET PROGRESS BAR -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Ticket Usage ({{ active_tickets|default(0) }}/4)</label>
+                    <div class="progress" style="height: 25px;">
+                        <div
+                                class="progress-bar
+                           {% if active_tickets|default(0) >= 4 %} bg-danger
+                           {% elif active_tickets|default(0) >= 3 %} bg-warning
+                           {% else %} bg-success {% endif %}"
+                                role="progressbar"
+                                style="width: {{ (active_tickets|default(0) / 4) * 100 }}%;"
+                                aria-valuenow="{{ active_tickets|default(0) }}"
+                                aria-valuemin="0"
+                                aria-valuemax="4">
+                            {{ active_tickets|default(0) }} / 4
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-muted" style="margin-top:-5px;">
+                    You currently have <strong>{{ active_tickets|default(0) }}</strong> out of <strong>4</strong> active
+                    tickets.
+                </p>
+
+                <form method="POST" action="{{ url_for('submit_ticket') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="Enter ticket title" required>
                     </div>
 
-                    {% elif ticket.status == 'Approved' %}
-                    <div class="d-flex justify-content-start gap-2 mt-3">
-                        <form method="POST" action="{{ url_for('done_ticket', ticket_id=ticket.id) }}">
-                            <button type="submit" class="btn btn-primary btn-sm">Done</button>
-                        </form>
-                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#viewModal{{ ticket.id }}">View
-                        </button>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" placeholder="Describe your issue"
+                                  required></textarea>
                     </div>
 
-                    {% elif ticket.status == 'Done' %}
-                    <div class="d-flex justify-content-start gap-2 mt-3">
-                        <button class="btn btn-secondary btn-sm" disabled>Completed</button>
-                        <button class="btn btn-info btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#viewModal{{ ticket.id }}">View
-                        </button>
+                    <div class="mb-3">
+                        <label class="form-label">Upload Photo (optional)</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*">
+                        <small class="text-muted">Supported formats: JPG, PNG, GIF. Max size: 5MB</small>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Category / Department</label>
+                        <select name="category" class="form-select" required>
+                            <option value="" disabled selected>Select Department</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="Plumbing">Plumbing</option>
+                            <option value="Carpentry">Carpentry</option>
+                            <option value="IT">IT</option>
+                        </select>
+                    </div>
+                    {% if active_tickets|default(0) >= 4 %}
+                    <div class="alert alert-danger">
+                        You already have 4 active tickets. Please wait until one is completed.
+                    </div>
+                    <button class="btn w-100 btn-secondary limit-reached" disabled>
+                        Submit Ticket (Limit Reached)
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn w-100" style="background-color: #f28b82; color: white;">Submit
+                        Ticket
+                    </button>
                     {% endif %}
-                </div>
+                </form>
             </div>
         </div>
-
-        <div id="noTicketsMessage" class="text-center text-muted mt-4" style="display: none;">
-            <p>No tickets to be shown.</p>
-        </div>
-
-        <!-- VIEW MODAL -->
-        <div class="modal fade" id="viewModal{{ ticket.id }}" tabindex="-1"
-             aria-labelledby="viewModalLabel{{ ticket.id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-dark text-white">
-                        <h5 class="modal-title" id="viewModalLabel{{ ticket.id }}">{{ ticket.title }}</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <p><strong>Description:</strong></p>
-                        <p>{{ ticket.description }}</p>
-
-                        <hr>
-                        <p><strong>Category:</strong> {{ ticket.category }}</p>
-                        <p><strong>Status:</strong> {{ ticket.status }}</p>
-                        <p><strong>Date Submitted:</strong>
-                            {{ ticket.date_submitted.strftime('%B %d, %Y at %I:%M %p') }}</p>
-
-                        {% if ticket.status != 'Pending' %}
-                        <hr>
-                        <p><strong>Approved By:</strong> {{ ticket.approved_by or 'N/A' }}</p>
-                        <p><strong>Date Approved:</strong>
-                            {{ ticket.date_approved.strftime('%B %d, %Y at %I:%M %p') if ticket.date_approved else 'N/A'
-                            }}</p>
-                        {% endif %}
-
-                        {% if ticket.photo %}
-                        <button class="btn btn-secondary btn-sm view-image-btn"
-                                data-url="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}">
-                            View Image
-                        </button>
-                        {% endif %}
-                    </div>
-
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {% endfor %}
     </div>
-    {% else %}
-    <p>No tickets assigned to your department.</p>
-    {% endif %}
 </div>
 
 <!-- Global Image Modal -->
@@ -242,7 +300,7 @@
     <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='js/maintenance_dashboard.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

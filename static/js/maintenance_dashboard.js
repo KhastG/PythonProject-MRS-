@@ -1,12 +1,19 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const statusFilter = document.getElementById("statusFilter");
-    const deptFilter = document.getElementById("deptFilter");
-    const tickets = document.querySelectorAll("#ticketContainer .col-md-4");
-    const noTicketsMessage = document.getElementById("noTicketsMessage");
+document.addEventListener('DOMContentLoaded', function() {
+    // Global Image Modal Trigger (For both Tickets Table and Submit Tab)
+    document.addEventListener("click", function (e) {
+        if (e.target.classList.contains("view-image-btn")) {
+            const imageUrl = e.target.getAttribute('data-url');
+            if (imageUrl) {
+                const modalImg = document.getElementById("modalImage");
+                modalImg.src = imageUrl;
+                const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+                modal.show();
+            }
+        }
+    });
 
     // LOG-OUT TRIGGER
     const logoutBtn = document.getElementById("logoutBtn");
-
     if (logoutBtn) {
         logoutBtn.addEventListener("click", function (e) {
             e.preventDefault();
@@ -17,44 +24,75 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function filterTickets() {
-        let statusValue = statusFilter.value;
-        let deptValue = deptFilter ? deptFilter.value : "All";
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchTickets');
+    const ticketRows = document.querySelectorAll('.ticket-row');
+    const noTicketsMessage = document.getElementById('noTicketsMessage');
+
+    function applyFilters() {
+        const selectedStatus = statusFilter.value;
+        // Use an array to store search fields to easily expand search scope if needed
+        const searchFields = ['data-title', 'data-submitter'];
+        const searchTerm = searchInput.value.toLowerCase().trim();
         let visibleCount = 0;
 
-        tickets.forEach(ticket => {
-            const statusText = ticket.querySelector(".card-body p strong")?.nextSibling?.textContent.trim() || "";
-            const deptText = ticket.querySelector(".card-body p:nth-of-type(2)")?.textContent.trim() || "";
+        ticketRows.forEach(row => {
+            const status = row.getAttribute('data-status');
 
-            const matchesStatus = (statusValue === "All" || statusText.includes(statusValue));
-            const matchesDept = (deptValue === "All" || deptText.includes(deptValue));
+            // Check if status matches filter
+            const statusMatch = selectedStatus === 'All' || status === selectedStatus;
 
-            if (matchesStatus && matchesDept) {
-                ticket.style.display = "block";
+            // Check if search term is found in any searchable field
+            const searchMatch = !searchTerm || searchFields.some(field =>
+                row.getAttribute(field).includes(searchTerm)
+            );
+
+            if (statusMatch && searchMatch) {
+                row.style.display = '';
                 visibleCount++;
             } else {
-                ticket.style.display = "none";
+                row.style.display = 'none';
             }
         });
 
-        // Toggle the "No tickets" message
-        noTicketsMessage.style.display = visibleCount === 0 ? "block" : "none";
+        noTicketsMessage.style.display = visibleCount === 0 ? 'block' : 'none';
     }
 
-    document.addEventListener("click", function (e) {
+    if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
 
-        if (e.target.classList.contains("view-image-btn")) {
+    // Initial filter application
+    if (statusFilter || searchInput) {
+        applyFilters();
+    }
 
-            const imageUrl = e.target.dataset.url;
+    const activeAlerts = document.querySelectorAll('.alert');
 
-            const modalImg = document.getElementById("modalImage");
-            modalImg.src = imageUrl; // Set image URL dynamically
+    if (activeAlerts.length > 0) {
+        let submissionRelated = false;
+        activeAlerts.forEach(alert => {
+            if (alert.textContent.includes('Ticket submitted successfully') ||
+                alert.textContent.includes('maximum of 4 active tickets') ||
+                alert.textContent.includes('fill in all required fields')) {
+                submissionRelated = true;
+            }
+        });
 
-            const modal = new bootstrap.Modal(document.getElementById("imageModal"));
-            modal.show();
+        if (submissionRelated) {
+            const submitTab = document.getElementById('submit-tab');
+            const ticketsTab = document.getElementById('tickets-tab');
+            const submitBody = document.getElementById('submit-body');
+            const ticketsBody = document.getElementById('tickets-body');
+
+            if (submitTab && submitBody) {
+                // Deactivate default tab
+                ticketsTab.classList.remove('active');
+                ticketsBody.classList.remove('show', 'active');
+
+                // Activate submit tab
+                submitTab.classList.add('active');
+                submitBody.classList.add('show', 'active');
+            }
         }
-    });
-
-    if (statusFilter) statusFilter.addEventListener("change", filterTickets);
-    if (deptFilter) deptFilter.addEventListener("change", filterTickets);
+    }
 });

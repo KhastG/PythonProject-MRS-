@@ -1,20 +1,4 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Smooth page fade-in animation
-    requestAnimationFrame(() => document.body.classList.add("fade-in"));
-
-    // Smooth fade-out transition for internal links
-    document.querySelectorAll("a").forEach(link => {
-        if (link.hostname === window.location.hostname) {
-          link.addEventListener("click", e => {
-            e.preventDefault();
-            document.body.classList.remove("fade-in");
-            document.body.classList.add("fade-out");
-            setTimeout(() => {
-              window.location.href = link.href;
-            }, 500); // matches CSS transition duration
-          });
-        }
-      });
 
     function showToast(message, type = "info") {
         const toast = document.getElementById("toast");
@@ -34,9 +18,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const maintenanceSelect = document.getElementById("maintenanceType");
     const passwordInput = document.getElementById("password");
 
-   // Sanitize regex: letters, numbers, spaces only
+    // Sanitize regex: letters, numbers, spaces only
     const safeText = /^[A-Za-z0-9\s]+$/;
-
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])[A-Za-z\d]{8,}$/;
 
     if (roleSelect) {
@@ -98,5 +81,23 @@ document.addEventListener("DOMContentLoaded", function() {
             form.querySelector("button[type='submit']").disabled = true;
             form.submit();
         });
+    }
+
+    // Smooth page fade-in animation
+    requestAnimationFrame(() => document.body.classList.add("fade-in"));
+
+    // Smooth fade-out transition for internal links
+    const mainContentWrapper = document.getElementById("main-content-wrapper");
+    requestAnimationFrame(() => mainContentWrapper.classList.add("fade-in"));
+    document.querySelectorAll("a").forEach(link => {
+        if (link.hostname === window.location.hostname) {
+            link.addEventListener("click", e => {
+                e.preventDefault();
+                document.body.classList.remove("fade-in");
+                document.body.classList.add("fade-out");
+                setTimeout(() => window.location.href = link.href, 500);
+            });
+        }
     });
 });
+

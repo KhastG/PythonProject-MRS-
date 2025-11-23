@@ -325,3 +325,11 @@ th {
 .table-responsive {
   overflow-x: auto;
 }
+
+footer {
+    text-align: center;
+    margin-top: auto;
+    color: white;
+    font-size: 14px;
+    padding-bottom: 20px;
+}

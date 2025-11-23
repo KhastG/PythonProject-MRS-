@@ -2,8 +2,10 @@
 <html>
 <head>
     <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <header style="background-color:#f28b82; color: white; padding: 20px;">
@@ -14,21 +16,26 @@
         </div>
     </div>
 </header>
+<div id="main-content-wrapper">
+    <div class="form-box">
+        <h2>Login Page</h2>
+        <form method="POST">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
 
-<div class="form-box">
-    <h2>Login Page</h2>
-
-    <form method="POST">
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
-
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-
-        <button type="submit">Login</button>
-    </form>
-
-    <p>Don’t have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+            <label for="password">Password:</label><br>
+            <div class="password-container">
+                <input type="password" id="password" name="password" required>
+                <button type="button" class="show-password-btn" id="togglePassword">
+                    <i class="fas fa-eye-slash"></i>
+                </button>
+            </div>
+            <br><br>
+            <button type="submit">Login</button>
+        </form>
+        <p><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
+        <p>Don’t have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
+    </div>
 </div>
 <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
     <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
@@ -36,6 +43,38 @@
 {% if login_error %}
 <input type="hidden" id="loginError" value="{{ login_error }}">
 {% endif %}
+
+<!-- FORGOT PASSWORD: ENTER EMAIL MODAL -->
+<div id="forgotPasswordModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Reset Password</h3>
+        <p>Enter your email address to receive an OTP.</p>
+
+        <input type="email" id="fp_email" placeholder="Email" required>
+
+        <button id="sendOtpBtn">Send OTP</button>
+        <button class="closeModal">Cancel</button>
+    </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div id="resetPasswordModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Reset Your Password</h3>
+
+        <label>Username:</label>
+        <input type="text" id="rp_username" disabled>
+
+        <label>New Password:</label>
+        <input type="password" id="rp_password">
+
+        <label>Re-enter Password:</label>
+        <input type="password" id="rp_confirm">
+
+        <button id="resetPasswordBtn">Reset Password</button>
+        <button class="closeModal">Cancel</button>
+    </div>
+</div>
 
 <!-- ERROR MODAL -->
 <div id="errorModal" class="modal-overlay">

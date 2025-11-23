@@ -135,7 +135,7 @@ header .dropdown {
     align-items: center;      /* vertically center the text */
     justify-content: center;  /* horizontally center the text */
     text-align: center;       /* ensures multi-line text stays centered */
-    height: 50px;             /* optional: uniform height for all buttons */
+    height: 50px;
 }
 
 .card-body .d-flex .btn {
@@ -249,6 +249,14 @@ header .dropdown {
     align-items: center;
 }
 
+footer {
+    text-align: center;
+    margin-top: auto;
+    color: white;
+    font-size: 14px;
+    padding-bottom: 20px;
+}
+
 /* Shake animation */
 @keyframes shake {
     0% { transform: translateX(0); }
@@ -263,4 +271,3 @@ header .dropdown {
 .limit-reached:hover {
     animation: shake 0.4s;
 }
-

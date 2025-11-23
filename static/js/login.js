@@ -95,6 +95,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    const togglePasswordBtn = document.getElementById("togglePassword");
+
+    if (togglePasswordBtn) {
+        togglePasswordBtn.addEventListener("click", function () {
+            const type = passwordInput.type === "password" ? "text" : "password";
+            passwordInput.type = type;
+
+            const icon = this.querySelector('i');
+            icon.classList.toggle('fa-eye-slash');
+            icon.classList.toggle('fa-eye');
+
+            this.classList.toggle('active');
+        });
+    }
+
     // DISPLAY BACKEND ERROR
     const backendError = document.getElementById("loginError")?.value;
     if (backendError && backendError.trim() !== "") {
@@ -141,8 +156,88 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    const fpLink = document.getElementById("forgotPasswordLink");
+    const forgotModal = document.getElementById("forgotPasswordModal");
+    const resetModal = document.getElementById("resetPasswordModal");
+
+    fpLink.onclick = () => {
+        forgotModal.classList.add("show");
+    };
+
+    document.querySelectorAll(".closeModal").forEach(btn => {
+        btn.onclick = () => {
+            forgotModal.classList.remove("show");
+            resetModal.classList.remove("show");
+        };
+    });
+
+    document.getElementById("sendOtpBtn").onclick = async () => {
+        const email = document.getElementById("fp_email").value.trim();
+        if (!email) {
+            showError("Please enter your email.");
+            return;
+        }
+
+        try {
+            const res = await fetch("/forgot_password/send_otp", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await res.json();
+
+            if (data.status === "error") {
+                showError(data.message);
+            } else {
+                // move to next modal
+                document.getElementById("rp_username").value = data.username;
+                forgotModal.classList.remove("show");
+                resetModal.classList.add("show");
+            }
+        } catch (err) {
+            showError("Server error. Try again later.");
+        }
+    };
+
+    document.getElementById("resetPasswordBtn").onclick = async () => {
+        const otp = prompt("Enter the OTP sent to your email:");
+        const newPass = document.getElementById("rp_password").value.trim();
+        const confirm = document.getElementById("rp_confirm").value.trim();
+
+        if (!otp || !newPass || !confirm) {
+            showError("Please complete all fields.");
+            return;
+        }
+
+        if (newPass !== confirm) {
+            showError("Passwords do not match.");
+            return;
+        }
+
+        try {
+            const res = await fetch("/forgot_password/reset", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ otp, newPass })
+            });
+
+            const data = await res.json();
+
+            if (data.status === "success") {
+                alert("Password reset successful. You can now login.");
+                location.reload();
+            } else {
+                showError(data.message);
+            }
+        } catch (error) {
+            showError("Server error.");
+        }
+    };
+
     // PAGE ANIMATIONS
-    requestAnimationFrame(() => document.body.classList.add("fade-in"));
+    const mainContentWrapper = document.getElementById("main-content-wrapper");
+    requestAnimationFrame(() => mainContentWrapper.classList.add("fade-in"));
     document.querySelectorAll("a").forEach(link => {
         if (link.hostname === window.location.hostname) {
             link.addEventListener("click", e => {
@@ -153,4 +248,5 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     });
+
 });

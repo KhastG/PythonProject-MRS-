@@ -17,7 +17,7 @@ html, body {
 
 /* Header styling */
 header {
-  background-color: #E57373;
+  background-color: #f28b82;
   border-bottom: 2px solid #f28b82;
   padding: 20px;
   color: white;
@@ -97,24 +97,58 @@ header .dropdown-menu {
   margin-bottom: 15px;
 }
 
+.nav-tabs {
+    border-bottom: 2px solid #f28b82;
+}
+
+.nav-tabs .nav-link {
+    color: #f28b82;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-weight: bold;
+    padding: 10px 15px;
+    margin-right: 5px;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #f28b82;
+}
+
+.nav-tabs .nav-link.active {
+    color: white;
+    background-color: #f28b82;
+    border-color: #f28b82;
+    border-radius: 5px 5px 0 0;
+}
+
+.tab-content {
+    padding-top: 15px;
+}
+
+#tickets-table-body thead th {
+    background-color: #f28b82; /* Header color matching the theme */
+    color: white;
+    border-bottom: 2px solid #e9e9e9;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.3em 0.6em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+#tickets-table-body td .d-flex.gap-2 {
+    margin-bottom: 0;
+}
+
 .card {
   border-radius: 10px;
-}
-
-.card-body h5 {
-  margin-bottom: 10px;
-}
-
-.card-body p {
-  margin-bottom: 5px;
-}
-
-.border-danger {
-  border: 2px solid #dc3545 !important;
-}
-
-.border-success {
-  border: 2px solid #28a745 !important;
 }
 
 .border-secondary {
@@ -193,10 +227,6 @@ form.d-flex button {
     align-items: center;
     padding: 0;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-#imageModal .modal-dialog {
-    max-width: 200px !important;
 }
 
 #imageModal .modal-dialog {
