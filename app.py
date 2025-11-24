@@ -2,7 +2,6 @@ import random
 import os
 import threading
 import mimetypes
-import csv
 
 from flask import Flask, render_template, redirect, url_for, request, session, jsonify, Response, get_flashed_messages, flash
 from flask_bcrypt import Bcrypt
@@ -17,14 +16,13 @@ from sqlalchemy import text
 from smtplib import SMTPRecipientsRefused
 from werkzeug.utils import secure_filename
 
-
 app = Flask(__name__)  # <--------------------------------------| WAG NA TONG GAGALAWIN!!!
 app.config.from_object(Config)#                                 |
-#access secret key
-SECRET_ADMIN_KEY = Config.SECRET_ADMIN_KEY
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+#access secret key                                              |
+SECRET_ADMIN_KEY = Config.SECRET_ADMIN_KEY#                     |
+UPLOAD_FOLDER = 'static/uploads'#                               |
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}#             |
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER#                    |
 #                                                               | this line of code refers to the connection of the db and also the email and the app password from the config.py and .env file
 #                                                               |
 db = SQLAlchemy(app)  #                                         |
@@ -118,18 +116,18 @@ def send_email(subject, recipient, body, html_body=None, sender=None):
         status = "FAILED"
         app.logger.warning(f"Failed to send email to {recipient}: {e}")
 
-    # Always log email (success or fail)
     try:
         log = EmailLogs(
             recipient_email=recipient,
             subject=subject,
             status=status
         )
-        db.session.add(log)
-        db.session.commit()
-    except:
+        with app.app_context():
+            db.session.add(log)
+            db.session.commit()
+    except Exception as db_err:
         db.session.rollback()
-        app.logger.error("Failed to save email log.")
+        app.logger.error(f"Failed to save email log: {db_err}")
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -283,13 +281,12 @@ def verify_otp():
                     admin_sender_email = app.config.get('ADMIN_MAIL_USERNAME')  # the Gmail account sending this
                     admin_sender_name = os.getenv('ADMIN_MAIL_SENDER_NAME', 'Maintenance System')
 
-                    msg = Message(
+                    send_email(
                         subject=subject,
-                        recipients=[admin_email],
-                        html=body_html,
-                        sender=(admin_sender_name, admin_sender_email)  # override sender here
+                        recipient=admin_email,
+                        html_body=body_html,
+                        sender=(admin_sender_name, admin_sender_email)
                     )
-                    mail.send(msg)
                 except Exception as email_err:
                     app.logger.warning(f"Failed to send admin notification: {email_err}")
                 flash('Your account has been created and is pending admin approval.', 'info')
@@ -313,17 +310,6 @@ def verify_otp():
             return redirect(url_for('verify_otp'))
 
     return render_template('verify_otp.html')
-
-def send_admin_email(subject, html_body):
-    admin_email = app.config.get('ADMIN_EMAIL')
-    msg = Message(subject=subject, recipients=[admin_email], html=html_body,
-                  sender=(os.getenv('ADMIN_MAIL_SENDER_NAME', 'Maintenance System'), admin_email))
-    mail.send(msg)
-
-# Async email sending helper
-def send_email_async(msg):
-    with app.app_context():
-        mail.send(msg)
 
 @app.route('/secret_admin', methods=['GET'])
 @login_required
@@ -357,10 +343,9 @@ def send_admin_otp():
     session['admin_otp'] = otp
 
     try:
-        msg = Message(
-            subject="Administrator Verification Code (OTP)",
-            recipients=[session['admin_temp_email']],
-            body=f"""
+        subject = "Administrator Verification Code (OTP)"
+        recipient = session['admin_temp_email']
+        body=f"""
         Hello,
 
         You are attempting to create a new administrator account in the Maintenance Ticketing System.
@@ -375,10 +360,11 @@ def send_admin_otp():
 
         — Maintenance Ticketing System
         """
-        )
-        #mail.send(msg)
-        threading.Thread(target=send_email_async, args=(msg,), daemon=True).start()
-
+        threading.Thread(
+            target=send_email,
+            args=(subject, recipient, body),
+            daemon=True
+        ).start()
         return jsonify({'success': True, 'message': 'OTP sent successfully!'})
     except Exception as e:
         app.logger.exception("Error sending admin OTP")
@@ -501,7 +487,11 @@ def update_account_status(pending_id):
                 <p>You can now log in.</p>
                 <p><small>Approved at: {approved_at_str}</small></p>
                 """
-                mail.send(Message(subject=subject, recipients=[new_user.email], html=body_html))
+                send_email(
+                    subject=subject,
+                    recipient=new_user.email,
+                    html_body=body_html
+                )
             except Exception as email_err:
                 app.logger.warning(f"Failed to send approval email: {email_err}")
 
@@ -524,14 +514,18 @@ def update_account_status(pending_id):
                 <p>We are sorry to inform you that your account has been <strong>rejected</strong> by the admin.</p>
                 <p>If you believe this is a mistake or want to try again, please contact the administrator.</p>
                 """
-                mail.send(Message(subject=subject, recipients=[rejected_email], html=body_html))
+                send_email(
+                    subject=subject,
+                    recipient=rejected_email,
+                    html_body=body_html
+                )
             except Exception as email_err:
                 app.logger.warning(f"Failed to send rejection email: {email_err}")
 
             msg = f"User {rejected_username} rejected and removed from pending."
             return jsonify({"message": msg})
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
         app.logger.exception("Error updating account status")
         return jsonify({"message": "An error occurred while updating account status."}), 500
@@ -568,6 +562,76 @@ def login():
     login_error = messages[0] if messages else None
     return render_template('login.html', login_error=login_error)
 
+def send_otp_email(recipient_email):
+    forgot_pass_otp = str(random.randint(100000, 999999))
+    session['reset_otp'] = forgot_pass_otp
+
+    subject = "Password Reset OTP"
+    body = f"""
+    Hello,
+
+    You requested a password reset for your Maintenance Ticketing System account.
+
+    Your One-Time Password (OTP) is:
+
+    🔐 {forgot_pass_otp}
+
+    Please enter this code within 5 minutes to reset your password.
+
+    If you did not request this, please ignore this email.
+
+    — Maintenance Ticketing System
+    """
+
+    try:
+        send_email(
+            subject=subject,
+            recipient=recipient_email,
+            body=body
+        )
+        return True
+    except Exception as e:
+        app.logger.error(f"Error sending reset OTP: {e}")
+        return False
+
+@app.route('/forgot_password/send_otp', methods=['POST'])
+def forgot_password_send_otp():
+    data = request.get_json()
+    email = data.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"status": "error", "message": "Email not found."})
+
+    session['reset_email'] = email
+    send_otp_email(email)
+
+    return jsonify({"status": "success", "username": user.username})
+
+@app.route('/forgot_password/reset', methods=['POST'])
+def forgot_password_reset():
+    data = request.get_json()
+    otp = data.get("otp")
+    new_pass = data.get("newPass")
+
+    if str(otp) != str(session.get("reset_otp")):
+        return jsonify({"status": "error", "message": "Invalid OTP."})
+
+    email = session.get("reset_email")
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        return jsonify({"status": "error", "message": "Something went wrong."})
+
+    #Hash the new password before storing it
+    user.password = bcrypt.generate_password_hash(new_pass).decode('utf-8')
+    db.session.commit()
+
+    session.pop("reset_otp", None)
+    session.pop("reset_email", None)
+
+    return jsonify({"status": "success"})
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -576,8 +640,6 @@ def dashboard():
         return redirect(url_for('login'))
 
     tickets = Ticket.query.filter_by(submitted_by=current_user.id).all()
-
-    # Count active tickets (e.g., Pending or Approved)
     active_tickets = sum(1 for t in tickets if t.status in ['Pending', 'Approved'])
 
     return render_template(
@@ -596,12 +658,20 @@ def maintenance_dashboard():
 
     # Show only tickets assigned to their department
     tickets = Ticket.query.filter_by(category=current_user.department).all()
+    active_tickets = Ticket.query.filter(
+        Ticket.submitted_by == current_user.id,
+        Ticket.status.in_(["Pending", "Approved"])
+    ).count()
 
     for ticket in tickets:
         if ticket.date_submitted:
+            # Apply timezone conversion
             ticket.date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
 
-    return render_template('maintenance_dashboard.html', user=current_user, tickets=tickets)
+    return render_template('maintenance_dashboard.html',
+                           user=current_user,
+                           tickets=tickets,
+                           active_tickets=active_tickets)
 
 
 @app.route('/admin_dashboard')
@@ -733,9 +803,12 @@ def download_email_logs():
 @app.route('/submit_ticket', methods=['POST'])
 @login_required
 def submit_ticket():
-    if current_user.role != 'employee':
-        flash("Only employees can submit tickets.", "danger")
-        return redirect(url_for('dashboard'))
+    if current_user.role == 'employee':
+        redirect_url = url_for('dashboard')
+    elif current_user.role == 'maintenance':
+        redirect_url = url_for('maintenance_dashboard')
+    else:
+        redirect_url = url_for('login')
 
     # LIMIT: Max 4 active tickets per user
     active_tickets = Ticket.query.filter(
@@ -744,8 +817,9 @@ def submit_ticket():
     ).count()
 
     if active_tickets >= 4:
-        flash("You have reached the maximum of 4 active tickets. Please wait until one ticket is marked done.","danger")
-        return redirect(url_for('dashboard'))
+        flash("You have reached the maximum of 4 active tickets. Please wait until one ticket is marked done.",
+              "danger")
+        return redirect(redirect_url)
 
     title = request.form['title']
     description = request.form['description']
@@ -755,7 +829,7 @@ def submit_ticket():
     #another layer of validation if the user tries to bypass the submission ticket with an empty input
     if not title or not description or not category:
         flash("Please fill in all required fields and select a department.", "danger")
-        return redirect(url_for('dashboard'))
+        return redirect(redirect_url)
 
     photo = request.files.get('photo')
     photo_filename = None
@@ -802,7 +876,35 @@ def submit_ticket():
                 recipient=maintenance_user.email,
                 body=body
             )
-    return redirect(url_for('dashboard'))
+
+    return redirect(redirect_url)
+
+@app.route('/update_ticket_status/<int:ticket_id>', methods=['POST'])
+@login_required
+def update_ticket_status(ticket_id):
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket:
+        flash("Ticket not found.", "danger")
+        return redirect(url_for('maintenance_dashboard'))
+
+    new_status = request.form.get('new_status')
+
+    if new_status not in ["Pending", "Approved", "Done", "Cancelled"]:
+        flash("Invalid status update.", "danger")
+        return redirect(url_for('maintenance_dashboard'))
+
+    # Update ticket
+    ticket.status = new_status
+    if new_status == "Approved":
+        ticket.approved_by = f"{current_user.first_name} {current_user.last_name}"
+        ticket.date_approved = datetime.now(ZoneInfo("Asia/Manila"))
+    elif new_status == "Done":
+        ticket.date_done = datetime.now(ZoneInfo("Asia/Manila"))
+
+    db.session.commit()
+
+    flash(f"Ticket updated to {new_status}!", "success")
+    return redirect(url_for('maintenance_dashboard'))
 
 @app.route('/approve_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
@@ -978,6 +1080,7 @@ def delete_ticket(ticket_id):
 
     return redirect(url_for('dashboard'))
 
+
 @app.route('/transfer_ticket/<int:ticket_id>', methods=['GET', 'POST'])
 @login_required
 def transfer_ticket(ticket_id):
@@ -988,10 +1091,75 @@ def transfer_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
 
     if request.method == 'POST':
+        old_category = ticket.category
         new_category = request.form['category']
+
+        if old_category == new_category:
+            flash(f"Ticket #{ticket.id} is already assigned to {new_category.capitalize()}.", "warning")
+            return redirect(url_for('admin_dashboard'))
+
         ticket.category = new_category
         db.session.commit()
-        flash(f"Ticket #{ticket.id} transferred to {new_category.capitalize()} successfully.", "success")
+
+        employee = ticket.user
+        employee_email = employee.email
+
+        # Find all maintenance users in the NEW department
+        new_dept_maintenance = User.query.filter_by(
+            role='maintenance',
+            department=new_category
+        ).all()
+
+        maintenance_emails = [u.email for u in new_dept_maintenance]
+
+        subject_employee = f"Ticket #{ticket.id} Transferred: {ticket.title}"
+        body_employee = f"""
+        Hello {employee.first_name},
+
+        Your maintenance ticket titled "{ticket.title}" (ID: #{ticket.id}) has been transferred 
+        from the {old_category.capitalize()} department to the {new_category.capitalize()} department 
+        by the administrator.
+
+        This may happen if the ticket category was incorrect or requires attention from a specialized team.
+
+        New Department: {new_category.capitalize()}
+        Status: {ticket.status}
+
+        Thank you for your patience.
+
+        — Maintenance Ticketing System
+        """
+        threading.Thread(
+            target=send_email,
+            args=(subject_employee, employee_email, body_employee),
+            daemon=True
+        ).start()
+
+        subject_maintenance = f"[ACTION REQUIRED] Ticket Transferred to {new_category.capitalize()}: #{ticket.id}"
+
+        for recipient_email in maintenance_emails:
+            body_maintenance = f"""
+            Hello Maintenance Team,
+
+            A new ticket requires your immediate attention in the {new_category.capitalize()} department. 
+            It was recently transferred by the administrator.
+
+            Ticket ID: #{ticket.id}
+            Title: {ticket.title}
+            Submitted by: {ticket.submitted_name}
+
+            Please log in to the system and review the ticket on the maintenance dashboard.
+
+            — Maintenance Ticketing System
+            """
+            threading.Thread(
+                target=send_email,
+                args=(subject_maintenance, recipient_email, body_maintenance),
+                daemon=True
+            ).start()
+
+        flash(f"Ticket #{ticket.id} successfully transferred to {new_category.capitalize()}. Notifications sent.",
+              "success")
         return redirect(url_for('admin_dashboard'))
 
     return render_template('transfer_ticket.html', ticket=ticket)
@@ -1061,8 +1229,6 @@ def filter_tickets():
             if getattr(t, 'date_submitted', getattr(t, 'date_done', None))
             else ''
         }
-
-    tickets = []
 
     if status == 'Done':
         q = DoneTicket.query
