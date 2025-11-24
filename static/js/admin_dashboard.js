@@ -26,6 +26,43 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    // --- DARK/LIGHT MODE TOGGLE LOGIC ---
+    const body = document.body;
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const darkModeKey = 'darkModeState'; // Key for sessionStorage
+
+    function applyMode(isLight) {
+        if (isLight) {
+            body.classList.add('light-mode');
+            darkModeToggle.checked = false; // Checkbox should be unchecked for Light Mode
+            darkModeToggle.parentElement.querySelector('label').textContent = 'Light Mode';
+        } else {
+            body.classList.remove('light-mode');
+            darkModeToggle.checked = true; // Checkbox should be checked for Dark Mode
+            darkModeToggle.parentElement.querySelector('label').textContent = 'Dark Mode';
+        }
+    }
+
+    const savedMode = sessionStorage.getItem(darkModeKey);
+
+    if (savedMode === 'light') {
+        applyMode(true);
+    } else {
+        applyMode(false);
+    }
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('change', function() {
+            if (this.checked) {
+                applyMode(false);
+                sessionStorage.setItem(darkModeKey, 'dark');
+            } else {
+                applyMode(true);
+                sessionStorage.setItem(darkModeKey, 'light');
+            }
+        });
+    }
+
     // LOG-OUT TRIGGER
     const logoutBtn = document.getElementById("logoutBtn");
 

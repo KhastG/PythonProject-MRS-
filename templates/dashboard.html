@@ -38,8 +38,19 @@
                     <hr class="dropdown-divider">
                 </li>
 
-                <!-- MENU OPTIONS -->
+                <!-- MENU OPTIONS under HAMBURGER MENU -->
                 <li><a class="dropdown-item" href="/about">About</a></li>
+
+                <li>
+                    <div class="form-check form-switch p-2 px-3 d-flex justify-content-between align-items-center">
+                        <label class="form-check-label" for="darkModeToggle">Dark Background</label>
+                        <input class="form-check-input" type="checkbox" id="darkModeToggle" checked>
+                    </div>
+                </li>
+                <li class="my-1">
+                    <hr class="dropdown-divider">
+                </li>
+
                 <li><a class="dropdown-item text-danger fw-bold" href="#" id="logoutBtn"
                        data-href="{{ url_for('logout') }}">Logout</a></li>
             </ul>

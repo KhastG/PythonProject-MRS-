@@ -640,8 +640,6 @@ def dashboard():
         return redirect(url_for('login'))
 
     tickets = Ticket.query.filter_by(submitted_by=current_user.id).all()
-
-    # Count active tickets (e.g., Pending or Approved)
     active_tickets = sum(1 for t in tickets if t.status in ['Pending', 'Approved'])
 
     return render_template(
@@ -660,12 +658,20 @@ def maintenance_dashboard():
 
     # Show only tickets assigned to their department
     tickets = Ticket.query.filter_by(category=current_user.department).all()
+    active_tickets = Ticket.query.filter(
+        Ticket.submitted_by == current_user.id,
+        Ticket.status.in_(["Pending", "Approved"])
+    ).count()
 
     for ticket in tickets:
         if ticket.date_submitted:
+            # Apply timezone conversion
             ticket.date_submitted = ticket.date_submitted.astimezone(ZoneInfo("Asia/Manila"))
 
-    return render_template('maintenance_dashboard.html', user=current_user, tickets=tickets)
+    return render_template('maintenance_dashboard.html',
+                           user=current_user,
+                           tickets=tickets,
+                           active_tickets=active_tickets)
 
 
 @app.route('/admin_dashboard')
@@ -811,8 +817,9 @@ def submit_ticket():
     ).count()
 
     if active_tickets >= 4:
-        flash("You have reached the maximum of 4 active tickets. Please wait until one ticket is marked done.","danger")
-        return redirect(url_for('dashboard'))
+        flash("You have reached the maximum of 4 active tickets. Please wait until one ticket is marked done.",
+              "danger")
+        return redirect(redirect_url)
 
     title = request.form['title']
     description = request.form['description']
@@ -822,7 +829,7 @@ def submit_ticket():
     #another layer of validation if the user tries to bypass the submission ticket with an empty input
     if not title or not description or not category:
         flash("Please fill in all required fields and select a department.", "danger")
-        return redirect(url_for('dashboard'))
+        return redirect(redirect_url)
 
     photo = request.files.get('photo')
     photo_filename = None
@@ -871,6 +878,33 @@ def submit_ticket():
             )
 
     return redirect(redirect_url)
+
+@app.route('/update_ticket_status/<int:ticket_id>', methods=['POST'])
+@login_required
+def update_ticket_status(ticket_id):
+    ticket = Ticket.query.get(ticket_id)
+    if not ticket:
+        flash("Ticket not found.", "danger")
+        return redirect(url_for('maintenance_dashboard'))
+
+    new_status = request.form.get('new_status')
+
+    if new_status not in ["Pending", "Approved", "Done", "Cancelled"]:
+        flash("Invalid status update.", "danger")
+        return redirect(url_for('maintenance_dashboard'))
+
+    # Update ticket
+    ticket.status = new_status
+    if new_status == "Approved":
+        ticket.approved_by = f"{current_user.first_name} {current_user.last_name}"
+        ticket.date_approved = datetime.now(ZoneInfo("Asia/Manila"))
+    elif new_status == "Done":
+        ticket.date_done = datetime.now(ZoneInfo("Asia/Manila"))
+
+    db.session.commit()
+
+    flash(f"Ticket updated to {new_status}!", "success")
+    return redirect(url_for('maintenance_dashboard'))
 
 @app.route('/approve_ticket/<int:ticket_id>', methods=['POST'])
 @login_required
@@ -1046,6 +1080,7 @@ def delete_ticket(ticket_id):
 
     return redirect(url_for('dashboard'))
 
+
 @app.route('/transfer_ticket/<int:ticket_id>', methods=['GET', 'POST'])
 @login_required
 def transfer_ticket(ticket_id):
@@ -1056,10 +1091,75 @@ def transfer_ticket(ticket_id):
     ticket = Ticket.query.get_or_404(ticket_id)
 
     if request.method == 'POST':
+        old_category = ticket.category
         new_category = request.form['category']
+
+        if old_category == new_category:
+            flash(f"Ticket #{ticket.id} is already assigned to {new_category.capitalize()}.", "warning")
+            return redirect(url_for('admin_dashboard'))
+
         ticket.category = new_category
         db.session.commit()
-        flash(f"Ticket #{ticket.id} transferred to {new_category.capitalize()} successfully.", "success")
+
+        employee = ticket.user
+        employee_email = employee.email
+
+        # Find all maintenance users in the NEW department
+        new_dept_maintenance = User.query.filter_by(
+            role='maintenance',
+            department=new_category
+        ).all()
+
+        maintenance_emails = [u.email for u in new_dept_maintenance]
+
+        subject_employee = f"Ticket #{ticket.id} Transferred: {ticket.title}"
+        body_employee = f"""
+        Hello {employee.first_name},
+
+        Your maintenance ticket titled "{ticket.title}" (ID: #{ticket.id}) has been transferred 
+        from the {old_category.capitalize()} department to the {new_category.capitalize()} department 
+        by the administrator.
+
+        This may happen if the ticket category was incorrect or requires attention from a specialized team.
+
+        New Department: {new_category.capitalize()}
+        Status: {ticket.status}
+
+        Thank you for your patience.
+
+        — Maintenance Ticketing System
+        """
+        threading.Thread(
+            target=send_email,
+            args=(subject_employee, employee_email, body_employee),
+            daemon=True
+        ).start()
+
+        subject_maintenance = f"[ACTION REQUIRED] Ticket Transferred to {new_category.capitalize()}: #{ticket.id}"
+
+        for recipient_email in maintenance_emails:
+            body_maintenance = f"""
+            Hello Maintenance Team,
+
+            A new ticket requires your immediate attention in the {new_category.capitalize()} department. 
+            It was recently transferred by the administrator.
+
+            Ticket ID: #{ticket.id}
+            Title: {ticket.title}
+            Submitted by: {ticket.submitted_name}
+
+            Please log in to the system and review the ticket on the maintenance dashboard.
+
+            — Maintenance Ticketing System
+            """
+            threading.Thread(
+                target=send_email,
+                args=(subject_maintenance, recipient_email, body_maintenance),
+                daemon=True
+            ).start()
+
+        flash(f"Ticket #{ticket.id} successfully transferred to {new_category.capitalize()}. Notifications sent.",
+              "success")
         return redirect(url_for('admin_dashboard'))
 
     return render_template('transfer_ticket.html', ticket=ticket)

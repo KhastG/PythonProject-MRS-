@@ -4,16 +4,19 @@ body::-webkit-scrollbar {
 }
 
 html, body {
+    height: 100%;
+}
+
+body {
   background: url('../website_images/ticketing-background.png') no-repeat center center fixed;
   background-size: cover;
-  height: 100%;
-  margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #fff8f6;
   color: #333;
+  text-align: center;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
 /* Header styling */
@@ -75,6 +78,36 @@ header .dropdown-menu {
   white-space: normal;
 }
 
+body.light-mode {
+    background: url('../website_images/ticketing-background-white.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #333;
+}
+
+body.light-mode header {
+    background-color: #f28b82;
+    border-bottom: 2px solid #e9e9e9;
+    color: #333;
+}
+
+body.light-mode header .dropdown button svg {
+    fill: #333 !important;
+}
+
+body.light-mode .title p {
+    color: #333;
+}
+
+body.light-mode .container {
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+body.light-mode header .title h1,
+body.light-mode header .title p {
+    color: white;
+}
+
 .admin-nav {
   background-color: #ffe6e6;
   border-bottom: 2px solid #C30F16;
@@ -133,7 +166,6 @@ header .dropdown-menu {
 }
 
 .container {
-  max-width: 800px;
   margin: 20px auto;
   padding: 20px;
   background-color: #fff8f6;
@@ -332,4 +364,69 @@ footer {
     color: white;
     font-size: 14px;
     padding-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    header .title h1 {
+        font-size: 1.5rem;
+    }
+
+    header .title p {
+        font-size: 0.8rem;
+    }
+
+    .admin-nav ul {
+        gap: 10px;
+        padding: 10px 5px;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-nav li {
+        font-size: 10px;
+        white-space: nowrap;
+        padding: 5px 8px; /
+        border-bottom: none !important;
+    }
+
+    .admin-nav li.active {
+        border-bottom: 3px solid #f28b82;
+    }
+
+    .container {
+        padding: 10px;
+        max-width: 800px;
+    }
+
+    #tickets .d-flex.gap-2.align-items-center {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    #tickets .d-flex.gap-2.align-items-center select {
+        width: 100% !important;
+    }
+
+    .btn {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .approve-btn, .reject-btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 5px;
+        margin-right: 0 !important;
+    }
+
+    #existingAccountsBody .delete-btn {
+        margin-left: 0;
+    }
+
+    .transfer-btn {
+        width: auto !important;
+        margin-left: 0 !important;
+    }
 }

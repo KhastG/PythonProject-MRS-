@@ -11,8 +11,8 @@
 
 <header>
     <div class="title">
-        <h1>MAINTENANCE DASHBOARD</h1>
-        <p>MANAGE TICKETS FOR: {{ user.department|upper }}</p>
+        <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
+        <p><strong> MAINTENANCE DASHBOARD FOR: {{ user.department|upper }} </strong></p>
     </div>
 
     <!-- HAMBURGER MENU -->
@@ -22,12 +22,13 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" class="bi bi-list"
                  viewBox="0 0 16 16">
                 <path fill-rule="evenodd"
-                      d="M2.5 12a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z"/>
+                      d="M2.5 12a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5
+                 0 0 1 0 1h-11zm0-4a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-11z"/>
             </svg>
         </button>
 
         <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 220px;">
-            <!-- USER (MAINTENANCE) INFO -->
+            <!-- USER INFO -->
             <li class="px-3 py-2 text-center">
                 <strong>{{ user.first_name }} {{ user.last_name }}</strong><br>
                 <small class="text-muted">{{ user.role|capitalize }}</small>
@@ -38,6 +39,17 @@
 
             <!-- MENU OPTIONS under HAMBURGER MENU -->
             <li><a class="dropdown-item" href="/about">About</a></li>
+
+            <li>
+                <div class="form-check form-switch p-2 px-3 d-flex justify-content-between align-items-center">
+                    <label class="form-check-label" for="darkModeToggle">Dark Background</label>
+                    <input class="form-check-input" type="checkbox" id="darkModeToggle" checked>
+                </div>
+            </li>
+            <li class="my-1">
+                <hr class="dropdown-divider">
+            </li>
+
             <li><a class="dropdown-item text-danger fw-bold" href="#" id="logoutBtn"
                    data-href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
@@ -48,6 +60,7 @@
     <div class="user-info mb-4">
         <h2>Welcome, {{ user.first_name }} {{ user.last_name }}!</h2>
         <p>Your Department: <strong>{{ user.department|upper }}</strong></p>
+        <hr>
     </div>
 
     <!--NAVIGATION(TABBED FORM) -->
@@ -92,11 +105,11 @@
                 <table class="table table-hover align-middle" id="tickets-table-body">
                     <thead>
                     <tr>
-                        <th scope="col" style="width: 15%;">Status</th>
-                        <th scope="col" style="width: 25%;">Title</th>
-                        <th scope="col" style="width: 20%;">Submitted By</th>
-                        <th scope="col" style="width: 20%;">Date</th>
-                        <th scope="col" style="width: 20%;">Actions</th>
+                        <th scope="col" style="width: 15%;">STATUS</th>
+                        <th scope="col" style="width: 25%;">TITLE</th>
+                        <th scope="col" style="width: 20%;">SUBMITTED BY</th>
+                        <th scope="col" style="width: 20%;">DATE SUBMITTED</th>
+                        <th scope="col" style="width: 20%;">ACTIONS</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -127,11 +140,13 @@
                                 {% if ticket.status in ['Pending', 'Approved'] %}
                                 <form method="POST" action="{{ url_for('update_ticket_status', ticket_id=ticket.id) }}">
                                     {% if ticket.status == 'Pending' %}
-                                    <input type="hidden" name="new_status" value="Approved">
-                                    <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                                    <form method="POST" action="{{ url_for('approve_ticket', ticket_id=ticket.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                                    </form>
                                     {% elif ticket.status == 'Approved' %}
-                                    <input type="hidden" name="new_status" value="Done">
-                                    <button type="submit" class="btn btn-sm btn-success">Done</button>
+                                    <form method="POST" action="{{ url_for('done_ticket', ticket_id=ticket.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-success">Done</button>
+                                    </form>
                                     {% endif %}
                                 </form>
                                 {% endif %}

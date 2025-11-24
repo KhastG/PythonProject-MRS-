@@ -2,10 +2,10 @@
 <html>
 <head>
     <title>Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 <header style="background-color:#f28b82; color: white; padding: 20px;">
@@ -36,10 +36,11 @@
         <p><a href="#" id="forgotPasswordLink">Forgot Password?</a></p>
         <p>Don’t have an account? <a href="{{ url_for('signup') }}">Sign Up</a></p>
     </div>
+
+    <footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
+        <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
+    </footer>
 </div>
-<footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
-    <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
-</footer>
 {% if login_error %}
 <input type="hidden" id="loginError" value="{{ login_error }}">
 {% endif %}
@@ -57,22 +58,54 @@
     </div>
 </div>
 
+<!-- ENTER OTP MODAL -->
+<div id="enterOtpModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Verify OTP</h3>
+        <p>We have sent a code to your email. Please enter it below.</p>
+
+        <input type="text" id="otp_input" placeholder="Enter 6-digit Code" maxlength="6" required
+               style="text-align: center; letter-spacing: 5px; font-weight: bold; font-size: 18px;">
+
+        <button id="verifyOtpBtn">Verify & Proceed</button>
+        <button class="closeModal">Cancel</button>
+    </div>
+</div>
+
 <!-- RESET PASSWORD MODAL -->
 <div id="resetPasswordModal" class="modal-overlay">
     <div class="modal-box">
-        <h3>Reset Your Password</h3>
+        <h3>Set New Password</h3>
+        <p>Please enter your new password.</p>
 
-        <label>Username:</label>
-        <input type="text" id="rp_username" disabled>
+        <!-- New Password Field -->
+        <div class="password-container" style="margin-bottom: 15px;">
+            <input type="password" id="rp_new_password" placeholder="New Password" required>
+            <button type="button" class="show-password-btn toggle-rp">
+                <i class="fas fa-eye-slash"></i>
+            </button>
+        </div>
 
-        <label>New Password:</label>
-        <input type="password" id="rp_password">
+        <!-- Confirm Password Field -->
+        <div class="password-container">
+            <input type="password" id="rp_confirm_password" placeholder="Confirm Password" required>
+            <button type="button" class="show-password-btn toggle-rp">
+                <i class="fas fa-eye-slash"></i>
+            </button>
+        </div>
 
-        <label>Re-enter Password:</label>
-        <input type="password" id="rp_confirm">
-
-        <button id="resetPasswordBtn">Reset Password</button>
+        <button id="savePasswordBtn" style="margin-top: 20px;">Reset Password</button>
         <button class="closeModal">Cancel</button>
+    </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div id="successModal" class="modal-overlay">
+    <div class="modal-box" style="border-top: 5px solid #28a745;">
+        <h3 style="color: #28a745;">Success!</h3>
+        <p>Your password has been reset successfully.</p>
+        <p>You can now login with your new password.</p>
+        <button id="closeSuccessBtn" style="background-color: #28a745;">Go to Login</button>
     </div>
 </div>
 

@@ -4,6 +4,7 @@
     <title>Sign Up</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -16,81 +17,80 @@
     </div>
 </header>
 
-<div class="form-box">
-    <h2>Create an Account</h2>
+<!-- WRAPPER FOR ANIMATED CONTENT -->
+<div id="main-content-wrapper">
+    <div class="form-box">
+        <h2>Create an Account</h2>
 
-    <form method="POST" action="/signup" id="signupForm">
-        <div class="form-grid">
-            <div class="form-group">
-                <label for="first_name">First Name:</label>
-                <input type="text" id="first_name" name="first_name" required>
-            </div>
+        <form method="POST" action="/signup" id="signupForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="first_name">First Name:</label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
 
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
 
-            <div class="form-group">
-                <label for="last_name">Last Name:</label>
-                <input type="text" id="last_name" name="last_name" required>
-            </div>
+                <div class="form-group">
+                    <label for="last_name">Last Name:</label>
+                    <input type="text" id="last_name" name="last_name" required>
+                </div>
 
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <div class="password-container">
-                    <input type="password" id="password" name="password" required>
-                    <button type="button" class="password-info"
-                            title="Password must contain:
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" required>
+                        <button type="button" class="password-info"
+                                title="Password must contain:
 • At least 8 characters
 • At least one uppercase letter
 • At least one lowercase letter
 • No special symbols">?
-                    </button>
+                        </button>
+                    </div>
+
                 </div>
 
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Re-enter Password:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="confirm_password">Re-enter Password:</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
-            </div>
-        </div>
-
-        <div class="centered-fields">
-            <label for="role">Role:</label>
-            <select id="role" name="role" required>
-                <option value="">-- Select Role --</option>
-                <option value="employee">Employee</option>
-                <option value="maintenance">Maintenance</option>
-            </select>
-
-            <div id="maintenanceTypeDiv" style="display:none;">
-                <label for="maintenanceType">Maintenance Type:</label>
-                <select id="maintenanceType" name="maintenanceType" disabled required>
-                    <option value="">-- Select Maintenance Type --</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="it">IT Support</option>
-                    <option value="carpentry">Carpentry</option>
+            <div class="centered-fields">
+                <label for="role">Role:</label>
+                <select id="role" name="role" required>
+                    <option value="">-- Select Role --</option>
+                    <option value="employee">Employee</option>
+                    <option value="maintenance">Maintenance</option>
                 </select>
+
+                <div id="maintenanceTypeDiv" style="display:none;">
+                    <label for="maintenanceType">Maintenance Type:</label>
+                    <select id="maintenanceType" name="maintenanceType" disabled required>
+                        <option value="">-- Select Maintenance Type --</option>
+                        <option value="plumbing">Plumbing</option>
+                        <option value="electrical">Electrical</option>
+                        <option value="it">IT Support</option>
+                        <option value="carpentry">Carpentry</option>
+                    </select>
+                </div>
+
+                <button type="submit">Sign Up</button>
             </div>
+        </form>
 
-            <button type="submit">Sign Up</button>
-        </div>
-    </form>
-
-    <p class="login-text">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+        <p class="login-text">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+    </div>
 </div>
-
-<footer style="color: white; text-align: center; background-color: transparent; margin-top: auto;">
-    <p class="mb-0">&copy; 2025 | Maintenance Ticketing System</p>
-</footer>
 
 <script src="{{ url_for('static', filename='js/signup.js') }}"></script>
 <div id="toast"></div>

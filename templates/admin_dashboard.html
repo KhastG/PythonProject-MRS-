@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='website_images/maintenance_ticket.png') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -13,7 +14,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <div class="title">
             <h1 style="font-weight: bold;">MAINTENANCE TICKETING SYSTEM</h1>
-            <p>ALL-IN-ONE MAINTENANCE TICKET SUBMISSION</p>
+            <p><strong>ADMIN DASHBOARD</strong></p>
         </div>
 
         <!-- HAMBURGER MENU -->
@@ -38,8 +39,19 @@
                     <hr class="dropdown-divider">
                 </li>
 
-                <!-- MENU OPTIONS -->
+                <!-- MENU OPTIONS under HAMBURGER MENU -->
                 <li><a class="dropdown-item" href="/about">About</a></li>
+
+                <li>
+                    <div class="form-check form-switch p-2 px-3 d-flex justify-content-between align-items-center">
+                        <label class="form-check-label" for="darkModeToggle">Dark Background</label>
+                        <input class="form-check-input" type="checkbox" id="darkModeToggle" checked>
+                    </div>
+                </li>
+                <li class="my-1">
+                    <hr class="dropdown-divider">
+                </li>
+
                 <li><a class="dropdown-item text-danger fw-bold" href="#" id="logoutBtn"
                        data-href="{{ url_for('logout') }}">Logout</a></li>
             </ul>
@@ -70,27 +82,29 @@
                     Unapproved Accounts
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Maintenance Dept.</th>
-                            <th>Approved/Reject</th>
-                        </tr>
-                        </thead>
-                        <tbody id="pendingAccountsBody">
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-3">
-                                Loading accounts...
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Account Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Department</th>
+                                <th>Approval/Reject</th>
+                            </tr>
+                            </thead>
+                            <tbody id="pendingAccountsBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-3">
+                                    Loading accounts...
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -131,53 +145,56 @@
                     All Tickets
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover mb-0" id="ticketTable">
-                        <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Employee</th>
-                            <th>Department</th>
-                            <th>Description</th>
-                            <th>Date Submitted</th>
-                            <th>Status</th>
-                            <th>Transfer (Pending Only)</th>
-                        </tr>
-                        </thead>
-                        <tbody id="ticketBody">
-                        {% for ticket in tickets %}
-                        <tr>
-                            <td>{{ ticket.id }}</td>
-                            <td>{{ ticket.submitted_name }}</td>
-                            <td>{{ ticket.category }}</td>
-                            <td>
-                                <button class="btn btn-info btn-sm mb-1 view-ticket-btn"
-                                        data-id="{{ ticket.id }}"
-                                        data-title="{{ ticket.title }}"
-                                        data-description="{{ ticket.description }}"
-                                        data-category="{{ ticket.category }}">
-                                    View
-                                </button>
-                                {% if ticket.photo %}
-                                <button class="btn btn-secondary btn-sm view-image-btn"
-                                        data-url="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}">
-                                    View Image
-                                </button>
-                                {% endif %}
-                            </td>
-                            <td>{{ ticket.date_submitted.strftime('%B %d, %Y') if ticket.date_submitted else 'N/A' }}
-                            </td>
-                            <td>{{ ticket.status }}</td>
-                            <td>
-                                <button class="btn btn-warning btn-sm transfer-btn"
-                                        data-ticket-id="{{ ticket.id }}"
-                                        data-current-dept="{{ ticket.category }}">
-                                    Transfer
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="ticketTable">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Employee</th>
+                                <th>Department</th>
+                                <th>Description</th>
+                                <th>Date Submitted</th>
+                                <th>Status</th>
+                                <th>Transfer (Pending Only)</th>
+                            </tr>
+                            </thead>
+                            <tbody id="ticketBody">
+                            {% for ticket in tickets %}
+                            <tr>
+                                <td>{{ ticket.id }}</td>
+                                <td>{{ ticket.submitted_name }}</td>
+                                <td>{{ ticket.category }}</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm mb-1 view-ticket-btn"
+                                            data-id="{{ ticket.id }}"
+                                            data-title="{{ ticket.title }}"
+                                            data-description="{{ ticket.description }}"
+                                            data-category="{{ ticket.category }}">
+                                        View
+                                    </button>
+                                    {% if ticket.photo %}
+                                    <button class="btn btn-secondary btn-sm view-image-btn"
+                                            data-url="{{ url_for('get_ticket_image', ticket_id=ticket.id) }}">
+                                        View Image
+                                    </button>
+                                    {% endif %}
+                                </td>
+                                <td>{{ ticket.date_submitted.strftime('%B %d, %Y') if ticket.date_submitted else 'N/A'
+                                    }}
+                                </td>
+                                <td>{{ ticket.status }}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm transfer-btn"
+                                            data-ticket-id="{{ ticket.id }}"
+                                            data-current-dept="{{ ticket.category }}">
+                                        Transfer
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -188,7 +205,8 @@
                     <div class="modal-content">
                         <div class="modal-header bg-dark text-white">
                             <h5 class="modal-title" id="transferModalLabel">Transfer Ticket</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <div class="mb-3">
@@ -237,27 +255,29 @@
                     Approved Accounts
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-striped mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Department</th>
-                            <th>Action</th>
-                        </tr>
-                        </thead>
-                        <tbody id="existingAccountsBody">
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-3">
-                                Loading approved accounts...
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Department</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="existingAccountsBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-3">
+                                    Loading approved accounts...
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -274,28 +294,30 @@
                 Sent Email Records
             </div>
             <div class="card-body p-0">
-                <table class="table table-striped mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Recipient Email</th>
-                        <th>Subject</th>
-                        <th>Status</th>
-                        <th>Date Sent</th>
-                    </tr>
-                    </thead>
-                    <tbody id="emailLogsBody">
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-3">
-                            Loading email logs...
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="text-end mt-3">
-                    <a href="/download_email_logs" class="btn btn-success">
-                        Download Email Logs (CSV file)
-                    </a>
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Recipient Email</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Date Sent</th>
+                        </tr>
+                        </thead>
+                        <tbody id="emailLogsBody">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">
+                                Loading email logs...
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-end mt-3">
+                        <a href="/download_email_logs" class="btn btn-success">
+                            Download Email Logs (CSV file)
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

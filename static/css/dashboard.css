@@ -68,17 +68,47 @@ header .dropdown {
 }
 
 .title h1 {
-  font-weight: bold;
-  margin: 0;
+    font-size: 40px;
+    line-height: 1.2;
 }
 
 .title p {
-  margin: 0;
+  display: block;
   text-align: center;
   line-height: 1.4;
+  white-space: normal;
 }
 
-/* Container styling */
+body.light-mode {
+    background: url('../website_images/ticketing-background-white.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #333; /* Default text color */
+}
+
+body.light-mode header {
+    background-color: #f28b82;
+    border-bottom: 2px solid #e9e9e9;
+    color: #333;
+}
+
+body.light-mode header .dropdown button svg {
+    fill: #333 !important;
+}
+
+body.light-mode .title p {
+    color: #333;
+}
+
+body.light-mode .container {
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+body.light-mode header .title h1,
+body.light-mode header .title p {
+    color: white;
+}
+
 .container {
   max-width: 800px;
   margin: 20px auto;

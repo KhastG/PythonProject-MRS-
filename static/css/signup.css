@@ -10,17 +10,29 @@ body {
   text-align: center;
   margin: 0;
   padding-top: 85px;
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  opacity: 0;
-  transform: translateX(30px);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
-body.fade-in {
+#main-content-wrapper {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 100px
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+#main-content-wrapper.fade-in {
   opacity: 1;
   transform: translateX(0);
 }
 
-body.fade-out {
+#main-content-wrapper.fade-out {
   opacity: 0;
   transform: translateX(-30px);
 }
@@ -33,28 +45,32 @@ header {
   background-color: #f28b82;
   color: white;
   text-align: center;
-  padding: 30px 20px;
+  padding: 20px 20px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
 
 .title h1 {
-    font-size: 24px;
+    font-size: 40px;
     line-height: 1.2;
 }
 
 .title p {
-    font-size: 14px;
+  display: block;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 .form-box {
   max-width: 700px;
-  margin: 50px auto;
+  margin: 100px auto;
   background: #fffaf9;
   padding: 40px 40px 40px 40px;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid #f28b82;
+  width: 90%; /* Added for mobile responsiveness */
 }
 
 .form-box h2 {
@@ -67,12 +83,22 @@ header {
   color: #555;
 }
 
-
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px 40px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+
+/* Mobile Responsive: Stack grid on small screens */
+@media (max-width: 600px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* Stack columns */
+        gap: 15px;
+    }
+    .form-box {
+        padding: 20px; /* Reduce padding on mobile */
+    }
 }
 
 .form-group {
@@ -116,9 +142,6 @@ label {
   vertical-align: middle;
 }
 
-
-
-
 input, select {
   width: 100%;
   padding: 10px;
@@ -126,6 +149,7 @@ input, select {
   border: 1px solid #ddd;
   outline: none;
   font-size: 14px;
+  box-sizing: border-box; /* Ensure padding doesn't break width */
 }
 
 input:focus, select:focus {
@@ -170,9 +194,9 @@ a:hover {
 
 footer {
   text-align: center;
-  margin-top: 40px;
   color: #999;
   font-size: 14px;
+  padding-bottom: 20px;
 }
 
 #toast {
@@ -198,4 +222,3 @@ footer {
   opacity: 1;
   bottom: 50px;
 }
-

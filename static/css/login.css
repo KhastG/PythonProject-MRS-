@@ -32,12 +32,15 @@ header {
 }
 
 .title h1 {
-    font-size: 24px;
+    font-size: 40px;
     line-height: 1.2;
 }
 
 .title p {
-    font-size: 14px;
+  display: block;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
 }
 
 #main-content-wrapper {
@@ -228,21 +231,16 @@ footer {
     animation: shake 0.4s ease;
 }
 
-@media screen and (max-width: 480px) {
-    .title h1 {
-        font-size: 18px;
-    }
+a {
+    color: #f28b82;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
 
-    .title p {
-        font-size: 10px;
-    }
+a:visited {
+    color: #f28b82;
+}
 
-    header {
-        padding: 15px 10px;
-    }
-
-    .form-box {
-        padding: 20px;
-        margin-top: 50px;
-    }
+a:active {
+    color: #f28b82;
 }
